@@ -6,6 +6,11 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+### Changed
+
+- `tools/install_forever.cmd` installs into the live client (`_forever_`) by default, not the
+  beta (2026-11-08).
+
 ## [1.1.1] - 2026-11-07
 
 ### Added
