@@ -6,6 +6,8 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+## [1.1.2] - 2026-11-14
+
 ### Fixed
 
 - Gold showed as 0 for every character but the one being played: the game reports no gold at

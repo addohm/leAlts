@@ -31,6 +31,8 @@ lupa 2.8 bundles Lua 5.1 (`import lupa.lua51`), which matches the game's Lua.
 - Characters show first and last names (2026-11-07); untried in game.
 - 1.1.1 cut (2026-11-07): `release/NothingWasted-1.1.1.zip`; the install script also packs the zip
   on the desktop.
+- 1.1.2 cut (2026-11-14): `release/NothingWasted-1.1.2.zip`, tagged `v1.1.2`. Fixes gold zeroed at
+  logout (works in game); the install script now hands over to the freshly pulled copy (untried).
 - APIs were checked against Blizzard's Forever UI source (build 1.60.1) and game IDs against Wowhead's
   Forever tooltips. Where a value is a guess, `Data.lua` and ROADMAP.md say so.
 - The GitHub repo is `addohm/nothing-wasted` (renamed from `rested-xp` on 2026-10-22).

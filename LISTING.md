@@ -135,6 +135,11 @@ character names you're happy to show.
 
 ---
 
+## Release notes for 1.1.2
+
+> - Fixed: gold showed as 0 for every character but the one you're playing. Each character shows
+>   its gold again after you next log in to it
+
 ## Release notes for 1.1.1
 
 > - Reminders for Well Fed, the Cozy Sleeping Bag and now the Camp Tent can get your attention
