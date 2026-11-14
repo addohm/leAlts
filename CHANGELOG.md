@@ -6,6 +6,12 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+### Fixed
+
+- Gold showed as 0 for every character but the one being played: the game reports no gold at
+  logout, and that was saved over the real amount. Gold is no longer read at logout; each
+  character shows the right amount again after its next login (2026-11-14).
+
 ### Changed
 
 - `tools/install_forever.cmd` installs into the live client (`_forever_`) by default, not the

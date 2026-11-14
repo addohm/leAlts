@@ -602,10 +602,12 @@ return function(root)
     end)
 
     test("1f. first and last names", function()
-        local a = mock.NewClient({ root = root, player = { name = "Kyol", surname = "Brightwater", level = 10, xp = 0, xpMax = 5000, resting = true } })
+        local a = mock.NewClient({ root = root, player = { name = "Kyol", surname = "Brightwater", level = 10, xp = 0, xpMax = 5000, resting = true, money = 123456 } })
         a:Login()
+        a.player.money = 0 -- the game reports no gold at logout
         local saved = a:Logout()
         eq(saved.chars["Kyol-Forever"].surname, "Brightwater", "the surname is saved")
+        eq(saved.chars["Kyol-Forever"].money, 123456, "gold isn't zeroed at logout")
         local b = mock.NewClient({ root = root, db = saved, player = { name = "Tam", surname = "Ashdown", level = 12, xp = 0, xpMax = 6000, resting = true } })
         b:Login()
         b.ns.Meter.Show()

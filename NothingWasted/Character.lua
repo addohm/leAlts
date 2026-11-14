@@ -72,7 +72,8 @@ function Character.Save(reason)
     Set(c, "zone", GetRealZoneText())
     c.subzone = GetSubZoneText() -- may be empty: not every spot has a subzone
     Set(c, "bind", GetBindLocation())
-    Set(c, "money", GetMoney())
+    -- At logout the game reports 0 gold. Money only changes in play, where PLAYER_MONEY saves it.
+    if reason ~= "logout" then Set(c, "money", GetMoney()) end
     c.seenAt = ns.Now()
 
     -- Learn how much XP each level takes, for "how far rested XP carries you".

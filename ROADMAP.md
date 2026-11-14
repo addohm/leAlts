@@ -18,6 +18,9 @@ What's done for Nothing Wasted and what's next. Update it in the same commit as 
   measured with `/nw rate` across a logout outside an inn or city.
 - **Well Rested cap:** whether +4% per rank multiplies the cap (rank 5: 180%) or adds to it (170%). The
   addon multiplies. Long term: it only shows once a character with Well Rested reaches the cap.
+- **Gold at logout:** that the game reports 0 gold at logout, which zeroed every saved character's
+  gold. The addon no longer reads gold there (2026-11-14); check that a character's gold survives
+  logging out.
 - **Cozy Sleeping Bag:** which of quests 79007 and 79008 is Alliance or Horde (either counts).
 - **Surnames:** that `UnitName("player")`'s second value is the surname on Forever (Blizzard's
   Camelot `NameUtil.lua` reads it that way), and how the mail Send To box takes a full name.
