@@ -18,9 +18,6 @@ What's done for Nothing Wasted and what's next. Update it in the same commit as 
   measured with `/nw rate` across a logout outside an inn or city.
 - **Well Rested cap:** whether +4% per rank multiplies the cap (rank 5: 180%) or adds to it (170%). The
   addon multiplies. Long term: it only shows once a character with Well Rested reaches the cap.
-- **Gold at logout:** that the game reports 0 gold at logout, which zeroed every saved character's
-  gold. The addon no longer reads gold there (2026-11-14); check that a character's gold survives
-  logging out.
 - **Cozy Sleeping Bag:** which of quests 79007 and 79008 is Alliance or Horde (either counts).
 - **Surnames:** that `UnitName("player")`'s second value is the surname on Forever (Blizzard's
   Camelot `NameUtil.lua` reads it that way), and how the mail Send To box takes a full name.
@@ -56,6 +53,8 @@ What's done for Nothing Wasted and what's next. Update it in the same commit as 
 - Recipes are recorded when a profession window is opened (`GetFilteredRecipeIDs` works) (2026-10-22).
 - At logout the game reports empty data (professions vanished from saved characters), so the addon
   doesn't re-read at logout except the XP snapshot and Well Rested, both guarded (2026-10-22).
+- Gold reads 0 at logout too, which zeroed every saved character's gold, so it isn't read there
+  any more; a character's gold now survives logging out (2026-11-14).
 - A first in-game pass: the windows, alerts, tracking and saving work (2026-10-22).
 - The client is 1.60.1 (70450), so Interface 16001 is right, and it's the build of Blizzard's UI
   source the API was checked against (2026-10-22).

@@ -6,16 +6,34 @@ rem Wasted was already loaded. It only pulls what's on GitHub: push your commits
 setlocal
 
 rem git pull can update this very file, and cmd reads a running script from disk line by line, so
-rem the script runs from a temporary copy. The original folder is passed along as the second argument.
-if not "%~1"=="--copy" (
-  copy /y "%~f0" "%TEMP%\nothing_wasted_install.cmd" >nul
-  call "%TEMP%\nothing_wasted_install.cmd" --copy "%~dp0"
-  exit /b
-)
+rem a temporary copy does the pull (the original folder is passed along as the second argument).
+rem It then hands over to the script just pulled, so changes to this script apply on the same run.
+if "%~1"=="--pull" goto pull
+if "%~1"=="--install" goto install
+copy /y "%~f0" "%TEMP%\nothing_wasted_install.cmd" >nul
+call "%TEMP%\nothing_wasted_install.cmd" --pull "%~dp0"
+exit /b
 
+:pull
 rem The repo is the folder above this script's tools folder, so it keeps working if the repo is
 rem renamed or moved.
 for %%i in ("%~2..") do set "REPO=%%~fi"
+if not exist "%REPO%\tools\install_forever.cmd" (
+  echo Can't find the repo at "%REPO%". Is this script in the repo's tools folder?
+  set "RESULT=1"
+  goto done
+)
+git -C "%REPO%" pull --ff-only
+if errorlevel 1 (
+  echo git pull failed, so nothing was copied.
+  set "RESULT=1"
+  goto done
+)
+call "%REPO%\tools\install_forever.cmd" --install
+exit /b %ERRORLEVEL%
+
+:install
+for %%i in ("%~dp0..") do set "REPO=%%~fi"
 rem Change WOW if your client lives elsewhere (for example the _classic_beta_ folder).
 rem Inside ( ) blocks, always quote paths: the ) in "Program Files (x86)" would end the block.
 set "WOW=C:\Program Files (x86)\World of Warcraft\_forever_"
@@ -28,13 +46,6 @@ if not exist "%REPO%\NothingWasted\NothingWasted.toc" (
 )
 if not exist "%WOW%\" (
   echo Can't find the WoW client at "%WOW%". Fix WOW at the top of this script.
-  set "RESULT=1"
-  goto done
-)
-
-git -C "%REPO%" pull --ff-only
-if errorlevel 1 (
-  echo git pull failed, so nothing was copied.
   set "RESULT=1"
   goto done
 )

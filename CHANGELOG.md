@@ -16,6 +16,9 @@ All notable changes to this project are documented here. The format follows
 
 - `tools/install_forever.cmd` installs into the live client (`_forever_`) by default, not the
   beta (2026-11-08).
+- `tools/install_forever.cmd` hands over to the freshly pulled copy of itself after `git pull`, so a
+  change to the script applies on the same run. Before, the first run after a change still used
+  the old script (2026-11-14).
 
 ## [1.1.1] - 2026-11-07
 
