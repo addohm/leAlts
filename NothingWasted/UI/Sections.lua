@@ -47,6 +47,18 @@ ns.Tooltip.AddSection({
 })
 
 ns.Tooltip.AddSection({
+    id = "missedXP",
+    label = L["XP missed without leveling buffs"],
+    order = 25,
+    add = function(tip, c)
+        local m = c.missedXP
+        if not m or c.isMax then return end
+        if (m.wellFed or 0) >= 1 then Line(tip, L["Missed without Well Fed"], format(L["about %s XP"], ns.FormatNumber(m.wellFed))) end
+        if (m.bag or 0) >= 1 then Line(tip, L["Missed without the sleeping bag"], format(L["about %s XP"], ns.FormatNumber(m.bag))) end
+    end,
+})
+
+ns.Tooltip.AddSection({
     id = "professions",
     label = L["Professions"],
     order = 30,

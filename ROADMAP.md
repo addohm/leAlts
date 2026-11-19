@@ -30,8 +30,12 @@ What's done for Nothing Wasted and what's next. Update it in the same commit as 
   `type1` item or toy), that the click buttons sit right over the icons (placed by `GetCenter`),
   and that food tooltips name Well Fed (English: "you will become well fed"). In other languages
   the tooltip may word it differently; `/nw buffs` shows the food found.
-- **XP missed:** that XP gained minus `QUEST_TURNED_IN`'s XP reward matches the kill XP in chat, and
-  that the 5% looks right next to the Well Fed tooltip.
+- **XP missed:** that the kill XP worked out (XP gained less `QUEST_TURNED_IN`'s reward, the drop
+  in the rested pool and exploration XP) matches the kill XP in chat; that Well Fed and the bag
+  add to the XP before the rested bonus, not to the bonus; that `QUEST_TURNED_IN`'s reward
+  already includes the bag's bonus; that the bag's buff works on quest XP as well as kills; that
+  exploration XP comes with `MAP_EXPLORATION_UPDATED`; and that the bag's stacks read as
+  `applications` on its aura.
 - **Sleeping bag buff:** that it's Well-Rested (429959). Wowhead lists it; not yet seen in game.
 - **Characters page and the bar menu:** that right-clicking a bar opens the Stop tracking / Forget
   menu (`MenuUtil.CreateContextMenu`), and the page's tick boxes and Forget buttons line up.
@@ -69,6 +73,8 @@ What's done for Nothing Wasted and what's next. Update it in the same commit as 
 - Buff reminder extras: pulsing screen border, repeated sound, build up, large text, taskbar
   flash (2026-11-06).
 - XP missed without Well Fed on its icon, and a kill bringing dismissed icons back (2026-11-06).
+- XP missed without the sleeping bag too, without the rested bonus or exploration XP, counted in
+  combat, with running totals per character (2026-11-19).
 - Click a reminder icon to eat food that gives Well Fed or use the sleeping bag (2026-11-06).
 - Buff reminders at login or after a reload out in the world (2026-11-06).
 - Camp Tent reminder while Boosted Rest is missing (2026-11-06).

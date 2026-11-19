@@ -465,6 +465,96 @@ return function(root)
         check(R.IsShown(), "when it ends")
     end)
 
+    test("1c3b. XP missed: rested bonus, exploration, the sleeping bag, combat", function()
+        local c = mock.NewClient({ root = root, player = {
+            name = "Sleepy", level = 20, xp = 0, xpMax = 10000, rested = 0, resting = false,
+            items = { [211527] = 1 },
+        }, spellNames = { [1248420] = "Well Fed" } })
+        c:Login()
+        local function Gain(xp, opts)
+            opts = opts or {}
+            c.player.xp = c.player.xp + xp
+            if opts.rested then c.player.rested = c.player.rested - opts.rested end
+            if opts.explore then c:Fire("MAP_EXPLORATION_UPDATED") end
+            c:Fire("PLAYER_XP_UPDATE", "player")
+            if opts.rested then c:Fire("UPDATE_EXHAUSTION") end
+            if opts.quest then c:Fire("QUEST_TURNED_IN", 123, opts.quest, 0) end
+            c:Advance(1)
+            c:Advance(1)
+        end
+        local B = c.ns.Buffs
+        local function Missed() return B.MissedXP("wellFed"), B.MissedXP("bag") end
+
+        -- Not fed, no bag buff: a 400 XP kill misses 5% (Well Fed) and 3% (the bag).
+        Gain(400)
+        near(B.MissedXP("wellFed"), 20, 0.01, "Well Fed: 5% of the kill")
+        near(B.MissedXP("bag"), 12, 0.01, "the bag: 3% of the kill")
+        -- A quest: the bag only.
+        Gain(1000, { quest = 1000 })
+        near(B.MissedXP("wellFed"), 20, 0.01, "quest XP doesn't count for Well Fed")
+        near(B.MissedXP("bag"), 42, 0.01, "but 3% of it for the bag")
+
+        -- Rested: 200 of a 400 kill is the rested bonus, so only 200 counts.
+        c.player.rested = 5000
+        c:Fire("UPDATE_EXHAUSTION")
+        Gain(400, { rested = 200 })
+        near(B.MissedXP("wellFed"), 30, 0.01, "the rested bonus isn't counted")
+        near(B.MissedXP("bag"), 48, 0.01, "for either buff")
+
+        -- Exploration XP counts for neither.
+        Gain(300, { explore = true })
+        near(B.MissedXP("wellFed"), 30, 0.01, "exploration XP doesn't count")
+        c:Advance(5)
+
+        -- Fed: kills miss only the bag's share, worked out before Well Fed's bonus.
+        c.player.auras[1248420] = c.env.GetTime() + 60
+        c:Fire("UNIT_AURA", "player")
+        c:Advance(2)
+        local wf0 = B.MissedXP("wellFed")
+        eq(wf0, 0, "fed again: the Well Fed count starts over")
+        Gain(420)
+        near(B.MissedXP("bag"), 48 + 12, 0.01, "3% of the 400 before Well Fed's 5%")
+
+        -- Well Fed runs out mid-fight: the kill after it counts.
+        c.inCombat = true
+        c:Advance(70)
+        Gain(400)
+        near(B.MissedXP("wellFed"), 20, 0.01, "counted from when Well Fed ran out, in combat")
+        c.inCombat = false
+        c.player.auras[1248420] = nil
+        c:Fire("PLAYER_REGEN_ENABLED")
+        c:Advance(2)
+
+        -- Two stacks of the bag's buff: 1% missed, on the XP before its 2%.
+        c:ClearChat()
+        c.player.auras[429959] = c.env.GetTime() + 3600
+        c.player.auraStacks[429959] = 2
+        c:Fire("UNIT_AURA", "player")
+        c:Advance(2)
+        check(c:ChatHas("Sleeping bag buff back on%. Without it you missed about 72 XP"), "chat line when the bag's buff is back")
+        eq(B.MissedXP("bag"), 0, "and its count starts over")
+        Gain(1020)
+        near(B.MissedXP("bag"), 10, 0.01, "one missing stack: 1% of 1,000")
+        near(B.MissedXP("wellFed"), 70, 0.01, "Well Fed 5% of 1,000")
+
+        -- Running totals are saved per character and shown in its tooltip and /nw buffs.
+        local me = rawget(c.env, "NothingWastedDB").chars["Sleepy-Forever"]
+        near(me.missedXP.wellFed, 100, 0.01, "Well Fed total saved")
+        near(me.missedXP.bag, 82, 0.01, "bag total saved")
+        c.ns.Tooltip.ShowCharacter(c.env.UIParent, me, true)
+        local tip = c.env.GameTooltip
+        check(tip:Has("Missed without Well Fed") and tip:Has("about 100 XP"), "the tooltip shows the Well Fed total")
+        check(tip:Has("Missed without the sleeping bag") and tip:Has("about 82 XP"), "and the bag total")
+        c:ClearChat()
+        c:Slash("buffs")
+        check(c:ChatHas("Without the sleeping bag: about 10, 82 in all"), "/nw buffs gives both")
+
+        -- Without the bag, nothing is missed for it.
+        c.player.items[211527] = nil
+        Gain(500)
+        near(B.MissedXP("bag"), 10, 0.01, "no bag, nothing missed for it")
+    end)
+
     test("1c4. clicking a reminder icon eats or uses the sleeping bag", function()
         local c = mock.NewClient({ root = root, player = {
             name = "Clicky", level = 20, xp = 0, xpMax = 10000, resting = true, items = { [211527] = 1 }, auras = { [1229451] = 99999 },

@@ -35,7 +35,7 @@ local KINDS = {
     wellFed = function()
         local def = { icon = SpellIcon(ns.Data.wellFedSpellID), label = L["Well Fed"],
             title = L["Not Well Fed"], hint = L["Eat cooked food: Well Fed gives +5% XP from kills."] }
-        local missed = ns.Buffs.MissedXP()
+        local missed = ns.Buffs.MissedXP("wellFed")
         if ns.db.settings.alerts.buffMissedXP and missed >= 1 then
             local n = ns.FormatNumber(missed)
             def.label = format(L["Well Fed (-%s XP)"], n)
@@ -55,6 +55,12 @@ local KINDS = {
     bag = function()
         local def = { icon = ItemIcon(ns.Data.sleepingBag.itemID), label = L["Sleeping bag"],
             title = L["Sleeping bag ready"], hint = L["Rest in your Cozy Sleeping Bag for up to +3% XP."] }
+        local missed = ns.Buffs.MissedXP("bag")
+        if ns.db.settings.alerts.buffMissedXP and missed >= 1 then
+            local n = ns.FormatNumber(missed)
+            def.label = format(L["Sleeping bag (-%s XP)"], n)
+            def.extra = format(L["Missed so far: about %s XP."], n)
+        end
         return Reminder.AddBagAction(def)
     end,
     tent = function()

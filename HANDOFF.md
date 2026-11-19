@@ -33,6 +33,8 @@ lupa 2.8 bundles Lua 5.1 (`import lupa.lua51`), which matches the game's Lua.
   on the desktop.
 - 1.1.2 cut (2026-11-14): `release/NothingWasted-1.1.2.zip`, tagged `v1.1.2`. Fixes gold zeroed at
   logout (works in game); the install script now hands over to the freshly pulled copy (untried).
+- XP missed reworked (2026-11-19, Unreleased): the sleeping bag too, without the rested bonus or
+  exploration XP, counted in combat, totals saved per character. Untried in game; see ROADMAP.md.
 - APIs were checked against Blizzard's Forever UI source (build 1.60.1) and game IDs against Wowhead's
   Forever tooltips. Where a value is a guess, `Data.lua` and ROADMAP.md say so.
 - The GitHub repo is `addohm/nothing-wasted` (renamed from `rested-xp` on 2026-10-22).

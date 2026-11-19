@@ -27,7 +27,7 @@ client's `Interface/AddOns` folder, or copy the `NothingWasted` folder into your
 | `/nw reset` | Forget every character (asks first) |
 | `/nw chars` | List every saved character, what its bar shows, and which session last saved the data |
 | `/nw rate` | Measure the rested XP rate: shows the live values and expected rate, sets a mark, and on the next run shows the rate since the mark (works across a logout). Also lists automatic checks made at each login. `/nw rate reset` starts over |
-| `/nw buffs` | What the leveling buff reminders see: Well Fed, where the sleeping bag is, its cooldown and buff, Boosted Rest, food that gives Well Fed |
+| `/nw buffs` | What the leveling buff reminders see: Well Fed, where the sleeping bag is, its cooldown and buff, Boosted Rest, food that gives Well Fed, and the XP missed without Well Fed and the bag |
 | `/nw perks` | List the Legacy perk nodes, to check perk spell IDs |
 
 `/nothingwasted` works too, in case another addon uses `/nw`. The minimap button and the game's
@@ -81,10 +81,14 @@ button for the bars window.
   - **Click to fix:** left-click the Well Fed icon to eat food from your bags that gives Well Fed
     (food whose tooltip mentions Well Fed), or the sleeping bag icon to use the bag. Hover to see
     what a click will do. Out of combat only. Can be turned off.
-  - **XP missed:** the Well Fed icon shows about how much XP you've missed by not eating (5% of
-    the kill XP since Well Fed was last on, this session), and a chat line gives the total when
-    you're fed again. Kill XP is your XP gained minus quest rewards, so exploration XP counts too.
-    Can be turned off.
+  - **XP missed:** the Well Fed and sleeping bag icons show about how much XP you've missed
+    without them since each was last on, and a chat line gives the total when it's back. Well Fed
+    misses 5% of kill XP; the sleeping bag misses 1% of kill and quest XP for each of its 3 stacks
+    you don't have (counted only once you have the bag, in your bags, bank or as a toy). Both are
+    worked out from the XP before any bonus: kill XP is your XP gained less quest rewards, the
+    rested bonus (the drop in your rested pool) and exploration XP. It keeps counting in combat,
+    from when a buff runs out. Each character's running totals are kept and shown in its tooltip
+    and in `/nw buffs`. Can be turned off.
   - Extras, all on by default and each can be turned off (Options → Alerts): a kill without a buff brings dismissed
     icons back (at most every 5 minutes; after the fight), large text near the top of the screen,
     a flash of the game's taskbar icon (for when you're alt-tabbed), and, while the icons are up, a

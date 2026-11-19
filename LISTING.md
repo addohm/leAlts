@@ -65,8 +65,8 @@ no mail left to expire.
   unused (+3% XP) or ready for another Camp Tent (rested XP), and the missing buffs' icons light
   up where the bars window was. They bring large text, a taskbar flash and, if you leave it a
   while, a pulsing screen border and a repeating sound until you fix it (each can be turned off).
-  The Well Fed icon counts the XP you've missed by not eating; click it to eat, or click the
-  sleeping bag to use it.
+  The Well Fed and sleeping bag icons count the XP you've missed without them, and each
+  character keeps a running total; click the Well Fed icon to eat, or the sleeping bag to use it.
 - **Logout warning** if you log out somewhere rested XP only builds at a quarter of the rate.
 - Pick any game sound, including the "See ya later" NPC farewell, or enter any sound ID.
 

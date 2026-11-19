@@ -6,6 +6,19 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+### Added
+
+- **XP missed without the sleeping bag:** 1% of kill and quest XP for each of its 3 stacks you
+  don't have, once you have the bag. Shown on its icon, in chat when the buff is back, and, like
+  Well Fed's, as a running total per character in the character tooltip and `/nw buffs`
+  (2026-11-19).
+
+### Fixed
+
+- XP missed without Well Fed counted the rested bonus and exploration XP as kill XP, so it came
+  out about twice too high while rested, and it missed kills after Well Fed ran out mid-fight. It
+  was also lost on a reload; the totals are saved now (2026-11-19).
+
 ## [1.1.2] - 2026-11-14
 
 ### Fixed

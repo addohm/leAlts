@@ -331,6 +331,7 @@ local DEFAULT_PLAYER = {
     items = {},         -- [itemID] = count (bags)
     itemCooldowns = {}, -- [itemID] = { start, duration }
     auras = {},         -- [spellID] = expirationTime (GetTime() seconds)
+    auraStacks = {},    -- [spellID] = stacks, for auras that have them
     quests = {},        -- [questID] = true
     perks = {},         -- [spellID] = rank, for Legacy nodes
     legacyUnlocked = true,
@@ -670,7 +671,10 @@ function M.NewClient(opts)
     }
     env.C_Bank = { FetchPurchasedBankTabData = function() return { { ID = 6 } } end }
     env.C_UnitAuras = {
-        GetPlayerAuraBySpellID = function(id) local exp = player.auras[id] if exp then return { expirationTime = exp } end end,
+        GetPlayerAuraBySpellID = function(id)
+            local exp = player.auras[id]
+            if exp then return { expirationTime = exp, applications = player.auraStacks[id] or 0 } end
+        end,
         -- The player's buffs in spell ID order, named by client.spellNames.
         GetAuraDataByIndex = function(unit, index, filter)
             assert(unit == "player" and filter == "HELPFUL", "only the player's buffs are faked")

@@ -41,6 +41,8 @@ Data.cooldowns = {
 Data.sleepingBag = {
     itemID = 211527,
     buffSpellID = 429959, -- Well-Rested: +1% XP per stack, up to 3, for 2 hours
+    xpPerStack = 0.01,    -- on kill and quest XP (not yet confirmed in game)
+    maxStacks = 3,
     level = 14,
     chain = { { 79007, 79008 }, { 79192 }, { 79980 }, { 79974 }, { 79975 }, { 79976 } },
 }

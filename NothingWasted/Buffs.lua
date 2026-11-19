@@ -14,19 +14,24 @@ local function HasAura(spellID)
     return C_UnitAuras.GetPlayerAuraBySpellID(spellID) ~= nil
 end
 
--- The spell ID of the player's Well Fed buff, or nil. Foods use different Well Fed spells, so this
--- goes by the name. Returns nil when the names are secret (in combat).
 local function WellFedName()
     return C_Spell.GetSpellName(ns.Data.wellFedSpellID) or L["Well Fed"]
 end
 
-local function WellFedSpell()
+-- The player's Well Fed buff, or nil. Foods use different Well Fed spells, so this goes by the
+-- name. Returns nil when the names are secret (in combat).
+local function WellFedAura()
     local name = WellFedName()
     for i = 1, 255 do
         local aura = C_UnitAuras.GetAuraDataByIndex("player", i, "HELPFUL")
         if not aura or (issecretvalue and issecretvalue(aura.name)) then return nil end
-        if aura.name == name then return aura.spellId end
+        if aura.name == name then return aura end
     end
+end
+
+local function WellFedSpell()
+    local aura = WellFedAura()
+    return aura and aura.spellId
 end
 
 -- Where the sleeping bag is: count in bags, count in the bank, and whether it's a toy.
@@ -190,41 +195,101 @@ end
 -- if you're out in the world (and that's turned on), then sets the baseline.
 local wasResting, hadWellFed, hadBagBuff, hadTent
 
--- Kill XP and what Well Fed would have added to it. Kill XP is worked out as XP gained minus quest
--- rewards (QUEST_TURNED_IN), so it's rough: exploration XP counts as kills too.
+-- XP missed without the buffs. Each XP gain is split into quest XP (QUEST_TURNED_IN's reward),
+-- exploration (a gain that comes with MAP_EXPLORATION_UPDATED) and kill XP (the rest, less the
+-- rested bonus, which shows as the rested pool going down). Well Fed's share is 5% of the kill XP;
+-- the sleeping bag's is 1% per missing stack of kill and quest XP, if you have the bag. Both are
+-- worked out from the XP before any bonus.
 local KILL_NUDGE_SECONDS = 300 -- a kill brings the icons back at most this often
-local missedXP = 0             -- Well Fed's share of the kill XP gained without it, since it was last on
+local EXPLORE_SECONDS = 2      -- a gain this close to an exploration counts as exploration XP
+local missed = { wellFed = 0, bag = 0 } -- since each buff was last on, this session
 local killedSinceCheck = false
 local lastKillNudge
 local lastXP, lastXPMax, lastLevel
-local gainedXP, questXP = 0, 0
+local restedSeen = 0           -- the rested pool, as last seen
+local batch                    -- gains within a second of each other: { xp, quest, rested }
+local exploredAt
 local CheckSoon
 
--- About how much XP Well Fed would have added since it was last on (this session).
-function Buffs.MissedXP()
-    return missedXP
+-- The buffs as last seen out of combat (auras can be secret in combat): when Well Fed and the
+-- bag's Well-Rested run out (0 for never), and the bag's stacks. nil until first read.
+local fedUntil, bagUntil, bagStacks
+local function ReadBuffs()
+    local fed = WellFedAura()
+    fedUntil = fed and (fed.expirationTime or 0) or false
+    local bag = C_UnitAuras.GetPlayerAuraBySpellID(ns.Data.sleepingBag.buffSpellID)
+    bagUntil = bag and (bag.expirationTime or 0) or false
+    bagStacks = bag and math.max(1, bag.applications or 0) or 0
 end
 
-local function OnKillXP(xp)
-    if not BelowMax() then return end
-    killedSinceCheck = true
-    if hadWellFed == false then
-        missedXP = missedXP + xp * ns.Data.wellFedXPBonus
-        ns.Reminder.Refresh()
+local function Active(untilTime)
+    return untilTime and (untilTime == 0 or GetTime() < untilTime) or false
+end
+
+-- About how much XP each buff would have added since it was last on (this session):
+-- kind "wellFed" or "bag".
+function Buffs.MissedXP(kind)
+    return missed[kind or "wellFed"]
+end
+
+local function AddMissed(kind, xp)
+    if xp <= 0 then return end
+    missed[kind] = missed[kind] + xp
+    local c = ns.Me()
+    if c then
+        c.missedXP = c.missedXP or {}
+        c.missedXP[kind] = (c.missedXP[kind] or 0) + xp
     end
-    CheckSoon()
+end
+
+local function HasBag()
+    local carried, banked, toy = BagWhere()
+    return carried + banked > 0 or toy
 end
 
 local function FlushXP()
-    local kill = gainedXP - questXP
-    gainedXP, questXP = 0, 0
-    if kill > 0 then OnKillXP(kill) end
+    local b = batch
+    batch = nil
+    if not BelowMax() then return end
+    if not InCombatLockdown() then ReadBuffs() end
+    if fedUntil == nil then return end -- the buffs haven't been read yet
+    local fed = Active(fedUntil)
+    local stacks = Active(bagUntil) and bagStacks or 0
+    local bonus = (fed and ns.Data.wellFedXPBonus or 0) + stacks * ns.Data.sleepingBag.xpPerStack
+    local explored = exploredAt and GetTime() - exploredAt <= EXPLORE_SECONDS
+    local kill = explored and 0 or math.max(0, b.xp - b.quest - b.rested)
+    local killBase = kill / (1 + bonus)
+    -- The reward QUEST_TURNED_IN gives is taken to include the bag's bonus.
+    local questBase = b.quest / (1 + stacks * ns.Data.sleepingBag.xpPerStack)
+    if not fed then AddMissed("wellFed", killBase * ns.Data.wellFedXPBonus) end
+    local missingStacks = ns.Data.sleepingBag.maxStacks - stacks
+    if missingStacks > 0 and HasBag() then
+        AddMissed("bag", (killBase + questBase) * missingStacks * ns.Data.sleepingBag.xpPerStack)
+    end
+    if kill > 0 then
+        killedSinceCheck = true
+        CheckSoon()
+    end
+    ns.Reminder.Refresh()
 end
 
-local function AddXP(xp, quest)
-    if gainedXP == 0 and questXP == 0 then C_Timer.After(1, FlushXP) end
-    if xp then gainedXP = gainedXP + xp end
-    if quest then questXP = questXP + quest end
+local function Batch()
+    if not batch then
+        batch = { xp = 0, quest = 0, rested = 0 }
+        C_Timer.After(1, FlushXP)
+    end
+    return batch
+end
+
+-- A drop in the rested pool is the rested bonus on a kill.
+local function SeeRested()
+    local now = GetXPExhaustion() or 0
+    if issecretvalue and issecretvalue(now) then return end
+    if now < restedSeen then
+        local b = Batch()
+        b.rested = b.rested + restedSeen - now
+    end
+    restedSeen = now
 end
 
 ns.On("PLAYER_XP_UPDATE", function(unit)
@@ -238,13 +303,22 @@ ns.On("PLAYER_XP_UPDATE", function(unit)
         elseif level > lastLevel then
             gained = (lastXPMax - lastXP) + xp
         end
-        if gained and gained > 0 then AddXP(gained) end
+        if gained and gained > 0 then
+            local b = Batch()
+            b.xp = b.xp + gained
+        end
     end
     lastXP, lastXPMax, lastLevel = xp, xpMax, level
+    SeeRested()
 end)
+ns.On("UPDATE_EXHAUSTION", SeeRested)
 ns.On("QUEST_TURNED_IN", function(_, xpReward)
-    if type(xpReward) == "number" and xpReward > 0 then AddXP(nil, xpReward) end
+    if type(xpReward) == "number" and xpReward > 0 then
+        local b = Batch()
+        b.quest = b.quest + xpReward
+    end
 end)
+ns.On("MAP_EXPLORATION_UPDATED", function() exploredAt = GetTime() end)
 
 function Buffs.Check()
     -- Auras can be secret in combat; the check runs again when combat ends, transitions intact.
@@ -260,12 +334,21 @@ function Buffs.Check()
     local killed = killedSinceCheck
     killedSinceCheck = false
 
-    -- Fed again: say what going without cost.
-    if wellFed then
-        if hadWellFed == false and missedXP >= 1 and settings.buffMissedXP then
-            ns.Print(YELLOW .. format(L["Well Fed again. Without it you missed about %s XP."], ns.FormatNumber(missedXP)) .. "|r")
+    ReadBuffs()
+
+    -- A buff back on: say what going without cost, and start counting again. The bag's count goes
+    -- on while it has fewer than 3 stacks.
+    if wellFed and hadWellFed ~= true then
+        if hadWellFed == false and missed.wellFed >= 1 and settings.buffMissedXP then
+            ns.Print(YELLOW .. format(L["Well Fed again. Without it you missed about %s XP."], ns.FormatNumber(missed.wellFed)) .. "|r")
         end
-        missedXP = 0
+        missed.wellFed = 0
+    end
+    if bagBuff and hadBagBuff ~= true then
+        if hadBagBuff == false and missed.bag >= 1 and settings.buffMissedXP then
+            ns.Print(YELLOW .. format(L["Sleeping bag buff back on. Without it you missed about %s XP."], ns.FormatNumber(missed.bag)) .. "|r")
+        end
+        missed.bag = 0
     end
 
     -- What's missing right now, and what just became worth a reminder.
@@ -316,6 +399,7 @@ ns.On("PLAYER_ENTERING_WORLD", function(isInitialLogin, isReload)
         wasResting, hadWellFed, hadBagBuff, hadTent = nil, nil, nil, nil
     end
     lastXP, lastXPMax, lastLevel = UnitXP("player"), UnitXPMax("player"), UnitLevel("player")
+    restedSeen = GetXPExhaustion() or 0
     C_Timer.After(5, Buffs.Check)
 end)
 ns.On("UNIT_AURA", function(unit) if unit == "player" then CheckSoon() end end)
@@ -349,4 +433,7 @@ function Buffs.Report()
         YesNo(HasAura(ns.Data.campTent.debuffSpellID))))
     local _, food = Buffs.WellFedFood()
     ns.Print(food and format(L["Food that gives Well Fed in your bags: %s."], food) or L["Food that gives Well Fed in your bags: none found."])
+    local total = ns.Me() and ns.Me().missedXP or {}
+    ns.Print(format(L["XP missed without Well Fed: about %s since it was last on, %s in all. Without the sleeping bag: about %s, %s in all."],
+        ns.FormatNumber(missed.wellFed), ns.FormatNumber(total.wellFed or 0), ns.FormatNumber(missed.bag), ns.FormatNumber(total.bag or 0)))
 end
