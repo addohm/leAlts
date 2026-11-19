@@ -1,6 +1,7 @@
 -- Nothing Wasted: the small bars window, like a damage meter. It pops up when you enter an inn or
 -- city and hides when you leave; a bars window you open yourself stays open unless the option says
--- otherwise. Click the title to open the full window.
+-- otherwise. With "always show" it's up from login; closing it then hides it until the next login
+-- or reload. Click the title to open the full window.
 local _, ns = ...
 local L = ns.L
 
@@ -16,7 +17,8 @@ local REFRESH_SECONDS = 5
 local frame, ticker, empty, grip
 local sizing = false -- true while the grip is being dragged
 local rows = {}
-local openedBy -- "auto" when it popped up for resting, "user" otherwise
+local openedBy -- "auto" when it popped up for resting, "always" for the option, "user" otherwise
+local dismissed = false -- closed while "always show" is on: stays closed until a login or reload
 
 local function SavePosition()
     local point, _, relPoint, x, y = frame:GetPoint()
@@ -168,6 +170,7 @@ function Meter.Show(by)
 end
 
 function Meter.Hide()
+    if frame and frame:IsShown() and ns.db.settings.bars.alwaysShow then dismissed = true end
     if frame then frame:Hide() end
 end
 
@@ -205,17 +208,32 @@ local function UpdateResting()
     if resting == wasResting then return end
     wasResting = resting
     local settings = ns.db.settings.bars
-    if not settings.autoShow then return end
+    if not settings.autoShow or settings.alwaysShow then return end
     if resting then
         if not Meter.IsShown() then Meter.Show("auto") end
-    elseif Meter.IsShown() and (openedBy == "auto" or not settings.manualStays) then
+    elseif Meter.IsShown() and (openedBy == "auto" or openedBy == "always" or not settings.manualStays) then
         Meter.Hide()
     end
 end
 
+-- "Always show": up unless it was closed since the last login or reload. Turning the option on
+-- shows it again.
+local wasAlways
+local function UpdateAlways()
+    local always = ns.db.settings.bars.alwaysShow
+    if always and not wasAlways then dismissed = false end
+    wasAlways = always
+    if always and not dismissed and not Meter.IsShown() then Meter.Show("always") end
+end
+
 ns.On("PLAYER_UPDATE_RESTING", UpdateResting)
-ns.On("PLAYER_ENTERING_WORLD", function()
+ns.On("PLAYER_ENTERING_WORLD", function(isInitialLogin, isReload)
+    if isInitialLogin or isReload then dismissed = false end
+    UpdateAlways()
     C_Timer.After(2, UpdateResting)
 end)
 
-ns.On("NW_REFRESH", Meter.Refresh)
+ns.On("NW_REFRESH", function()
+    UpdateAlways()
+    Meter.Refresh()
+end)

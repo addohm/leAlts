@@ -45,6 +45,7 @@ local DEFAULT_SETTINGS = {
         buffCustomSound = "",
     },
     bars = {
+        alwaysShow = false,   -- show the bars window all the time (closing it hides it until the next login or reload)
         autoShow = true,      -- show the bars window when entering an inn or city, hide when leaving
         manualStays = true,   -- a bars window opened by hand stays open when leaving
         showMax = false,      -- show max-level characters

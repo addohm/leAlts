@@ -76,6 +76,7 @@ What's done for Nothing Wasted and what's next. Update it in the same commit as 
   flash (2026-11-06).
 - XP missed without Well Fed on its icon, and a kill bringing dismissed icons back (2026-11-06).
 - Reminder icons can be moved anywhere, apart from the bars window (2026-11-19).
+- Always show the bars window, an option (2026-11-19).
 - XP missed without the sleeping bag too, without the rested bonus or exploration XP, counted in
   combat, with running totals per character (2026-11-19).
 - Click a reminder icon to eat food that gives Well Fed or use the sleeping bag (2026-11-06).

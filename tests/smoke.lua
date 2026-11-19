@@ -639,6 +639,51 @@ return function(root)
         check(settings.reminderPos[1] == cx and settings.reminderPos[2] == cy, "Reset position centres them")
     end)
 
+    test("1c3d. always show the bars window", function()
+        local c = mock.NewClient({ root = root, player = {
+            name = "Always", level = 20, xp = 0, xpMax = 10000, resting = false,
+        } })
+        c:Login()
+        local M = c.ns.Meter
+        local bars = rawget(c.env, "NothingWastedDB").settings.bars
+        check(not M.IsShown(), "off by default: not shown out in the world")
+        -- Turning it on shows it.
+        c.ns.Window.Show("barsopt")
+        local box
+        for _, f in ipairs(c.frames) do
+            if f.kind == "CheckButton" and f:IsVisible() and f.parent and f.parent.label
+                and f.parent.label.text and f.parent.label.text:find("^Always show it") then box = f end
+        end
+        check(box ~= nil, "the option is on the Bars window page")
+        box:Click()
+        check(bars.alwaysShow, "it turns on")
+        check(M.IsShown(), "turning it on shows the bars window")
+        c.ns.Window.Hide()
+        -- Leaving and entering rest don't hide it.
+        c.player.resting = true
+        c:Fire("PLAYER_UPDATE_RESTING")
+        c.player.resting = false
+        c:Fire("PLAYER_UPDATE_RESTING")
+        check(M.IsShown(), "it stays up when leaving rest")
+        -- Closing it: hidden until the next login or reload, even in an inn.
+        M.Hide()
+        c.player.resting = true
+        c:Fire("PLAYER_UPDATE_RESTING")
+        c:Fire("NW_REFRESH")
+        check(not M.IsShown(), "closed, it doesn't come back in an inn")
+        c:Fire("PLAYER_ENTERING_WORLD", false, false) -- a zone change
+        check(not M.IsShown(), "or after a loading screen")
+        c:Fire("PLAYER_ENTERING_WORLD", false, true)
+        check(M.IsShown(), "a reload brings it back")
+        -- At login.
+        local saved = c:Logout()
+        local d = mock.NewClient({ root = root, db = saved, player = {
+            name = "Always", level = 20, xp = 0, xpMax = 10000, resting = false,
+        } })
+        d:Login()
+        check(d.ns.Meter.IsShown(), "it's up at login")
+    end)
+
     test("1c4. clicking a reminder icon eats or uses the sleeping bag", function()
         local c = mock.NewClient({ root = root, player = {
             name = "Clicky", level = 20, xp = 0, xpMax = 10000, resting = true, items = { [211527] = 1 }, auras = { [1229451] = 99999 },

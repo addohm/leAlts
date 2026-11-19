@@ -111,6 +111,8 @@ button for the bars window.
 
 - A small window with just the rested bars, like a damage meter. It appears when you enter an inn or
   city and hides when you leave.
+- **Always show it** (Options → Bars window, off by default): it's up from login and stays up
+  wherever you go. Closing it hides it until your next login or reload.
 - One bar per character with its name and time to cap, running from 0 to that character's rested cap,
   soonest to cap at the top. Shows up to 10 bars by default (5 to 40 in the options).
 - The bar text can show, instead of time to cap: the rested XP amount, rested XP as a % of a level or

@@ -129,6 +129,7 @@ Page("alerts", L["Alerts"], 1, function(stack)
 end, ResetGroup("alerts"))
 
 Page("barsopt", L["Bars window"], 2, function(stack)
+    Check(stack, L["Always show it (closing it hides it until the next login or reload)"], "bars", "alwaysShow")
     Check(stack, L["Show in inns and cities, hide when leaving"], "bars", "autoShow")
     Check(stack, L["Stay open when leaving if I opened it"], "bars", "manualStays")
     Check(stack, L["Show max-level characters"], "bars", "showMax")

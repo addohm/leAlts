@@ -47,7 +47,7 @@ no mail left to expire.
 #### Rested XP, for every character
 
 - A small bars window pops up when you enter an inn or city: one bar per character, soonest to cap
-  at the top. It hides again when you leave.
+  at the top. It hides again when you leave, or can stay up all the time.
 - Offline estimates that account for where each character logged out (inn or city, or out in the
   world) and its **Well Rested** Legacy perk rank, which raises both the rate and the cap.
 - Choose what the bars show: time to cap, rested XP, % of a level, % of the cap, or the level the
