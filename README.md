@@ -65,10 +65,14 @@ button for the bars window.
 - **Logout warning:** a chat line if you log out somewhere that isn't resting, where rested XP builds
   at a quarter of the rate.
 - **Leveling buffs** (below max level): when you leave an inn or city, log in or reload out in the
-  world (can be turned off), or a buff wears off while you're out in the world, the missing buffs' **icons** appear centered where the bars window was, at the same
-  moment it closes: large, with a pulsing yellow glow and a small label under each (hover for
+  world (can be turned off), or a buff wears off while you're out in the world, the missing buffs'
+  **icons** appear: large, with a pulsing yellow glow and a small label under each (hover for
   details, right-click to dismiss). They come with the alert sound and a screen-edge flash (each can
   be turned off).
+  - **Where:** centred where the bars window is, until you move them. Options → Alerts →
+    Reminder icons → **Move** shows sample icons to drag anywhere; right-click them or click **Done**
+    (closing the options works too). **Reset position** puts them in the middle of the screen. Not
+    in combat.
   - "Not Well Fed": cooked food's Well Fed gives +5% XP from kills.
   - "Sleeping bag ready": resting in it gives up to +3% XP. Only when the bag is in your bags (a bag
     in the bank can't be used) and off cooldown.

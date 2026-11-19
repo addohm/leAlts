@@ -30,6 +30,8 @@ What's done for Nothing Wasted and what's next. Update it in the same commit as 
   `type1` item or toy), that the click buttons sit right over the icons (placed by `GetCenter`),
   and that food tooltips name Well Fed (English: "you will become well fed"). In other languages
   the tooltip may word it differently; `/nw buffs` shows the food found.
+- **Moving the reminder icons:** that dragging the sample works, the icons come up where they were
+  dropped, and the click-to-use buttons sit over them afterwards.
 - **XP missed:** that the kill XP worked out (XP gained less `QUEST_TURNED_IN`'s reward, the drop
   in the rested pool and exploration XP) matches the kill XP in chat; that Well Fed and the bag
   add to the XP before the rested bonus, not to the bonus; that `QUEST_TURNED_IN`'s reward
@@ -73,6 +75,7 @@ What's done for Nothing Wasted and what's next. Update it in the same commit as 
 - Buff reminder extras: pulsing screen border, repeated sound, build up, large text, taskbar
   flash (2026-11-06).
 - XP missed without Well Fed on its icon, and a kill bringing dismissed icons back (2026-11-06).
+- Reminder icons can be moved anywhere, apart from the bars window (2026-11-19).
 - XP missed without the sleeping bag too, without the rested bonus or exploration XP, counted in
   combat, with running totals per character (2026-11-19).
 - Click a reminder icon to eat food that gives Well Fed or use the sleeping bag (2026-11-06).

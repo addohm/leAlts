@@ -63,7 +63,7 @@ no mail left to expire.
 - **Early warning** before an alt caps (2 hours by default, adjustable).
 - **Leveling buffs:** leave town without Well Fed (+5% kill XP), with your Cozy Sleeping Bag
   unused (+3% XP) or ready for another Camp Tent (rested XP), and the missing buffs' icons light
-  up where the bars window was. They bring large text, a taskbar flash and, if you leave it a
+  up, wherever you've put them. They bring large text, a taskbar flash and, if you leave it a
   while, a pulsing screen border and a repeating sound until you fix it (each can be turned off).
   The Well Fed and sleeping bag icons count the XP you've missed without them, and each
   character keeps a running total; click the Well Fed icon to eat, or the sleeping bag to use it.

@@ -555,6 +555,90 @@ return function(root)
         near(B.MissedXP("bag"), 10, 0.01, "no bag, nothing missed for it")
     end)
 
+    test("1c3c. moving the reminder icons", function()
+        local c = mock.NewClient({ root = root, player = {
+            name = "Mover", level = 20, xp = 0, xpMax = 10000, resting = true,
+        }, spellNames = { [1248420] = "Well Fed" } })
+        c:Login()
+        local R = c.ns.Reminder
+        local settings = rawget(c.env, "NothingWastedDB").settings.alerts
+        local function Visible()
+            local kinds = {}
+            for _, f in ipairs(c.frames) do
+                if f.buffKind and f:IsVisible() then kinds[#kinds + 1] = f.buffKind end
+            end
+            table.sort(kinds)
+            return table.concat(kinds, ",")
+        end
+        local function Button(text)
+            for _, f in ipairs(c.frames) do
+                if f.kind == "Button" and f.text == text and f:IsVisible() then return f end
+            end
+        end
+
+        c.player.resting = false
+        c:Fire("PLAYER_UPDATE_RESTING")
+        c:Advance(1)
+        check(R.IsShown(), "the reminder is up")
+        R.Hide()
+
+        -- Move from the options: sample icons under a cover.
+        c.ns.Window.Show("alerts")
+        Button("Move"):Click()
+        check(R.IsMoving(), "Move starts moving")
+        local mover = R.Mover()
+        local frame = mover.parent
+        check(mover:IsVisible(), "the cover is shown")
+        eq(Visible(), "bag,tent,wellFed", "with a sample of every icon")
+        check(not R.IsShown(), "which isn't a reminder")
+        local _, rel = frame:GetPoint()
+        check(rel == c.ns.Meter.GetFrame(), "at first on the bars window")
+        c.ns.Window.Refresh()
+        check(Button("Done") ~= nil, "the button says Done")
+
+        -- Drag: the centre is saved and the icons sit there.
+        mover.scripts.OnDragStart(mover)
+        mover.scripts.OnDragStop(mover)
+        local pos = settings.reminderPos
+        check(pos and pos[1] == 100 and pos[2] == 100, "the centre is saved")
+        local point, rel2, relPoint, x, y = frame:GetPoint()
+        check(point == "CENTER" and rel2 == c.env.UIParent and relPoint == "BOTTOMLEFT" and x == 100 and y == 100,
+            "and the icons are placed on it")
+
+        -- A real reminder while moving shows when done.
+        R.Show({ "wellFed" })
+        check(R.IsShown(), "a reminder comes up while moving")
+        eq(Visible(), "bag,tent,wellFed", "the sample stays meanwhile")
+        mover.scripts.OnClick(mover, "RightButton")
+        check(not R.IsMoving(), "right-click finishes")
+        check(not mover:IsVisible(), "the cover goes")
+        eq(Visible(), "wellFed", "and the real icons show, where they were moved to")
+        local _, rel3 = frame:GetPoint()
+        check(rel3 == c.env.UIParent, "not on the bars window any more")
+        R.Hide()
+        check(not frame:IsVisible(), "they hide as before")
+
+        -- Not in combat.
+        c.inCombat = true
+        c:ClearChat()
+        R.SetMoving(true)
+        check(not R.IsMoving() and c:ChatHas("can't be moved in combat"), "no moving in combat")
+        c.inCombat = false
+
+        -- Closing the options ends moving.
+        R.SetMoving(true)
+        c.ns.Window.Hide()
+        check(not R.IsMoving(), "closing the options finishes moving")
+        check(not frame:IsVisible(), "and with no reminder up, the icons go")
+
+        -- Reset: the middle of the screen.
+        c.ns.Window.Show("alerts")
+        settings.reminderPos = { 5, 5 }
+        Button("Reset position"):Click()
+        local cx, cy = c.env.UIParent:GetCenter()
+        check(settings.reminderPos[1] == cx and settings.reminderPos[2] == cy, "Reset position centres them")
+    end)
+
     test("1c4. clicking a reminder icon eats or uses the sleeping bag", function()
         local c = mock.NewClient({ root = root, player = {
             name = "Clicky", level = 20, xp = 0, xpMax = 10000, resting = true, items = { [211527] = 1 }, auras = { [1229451] = 99999 },

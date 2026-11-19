@@ -341,6 +341,7 @@ local function Build()
             ticker:Cancel()
             ticker = nil
         end
+        ns.Fire("NW_WINDOW_HIDDEN")
     end)
 end
 

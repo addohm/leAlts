@@ -8,6 +8,9 @@ All notable changes to this project are documented here. The format follows
 
 ### Added
 
+- **Move the reminder icons:** Options → Alerts → Reminder icons → Move shows sample icons to drag
+  anywhere; right-click them or click Done. They stay there instead of following the bars window,
+  so both can be up at once. Reset position puts them in the middle of the screen (2026-11-19).
 - **XP missed without the sleeping bag:** 1% of kill and quest XP for each of its 3 stacks you
   don't have, once you have the bag. Shown on its icon, in chat when the buff is back, and, like
   Well Fed's, as a running total per character in the character tooltip and `/nw buffs`

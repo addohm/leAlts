@@ -107,6 +107,13 @@ Page("alerts", L["Alerts"], 1, function(stack)
     Select(stack, L["Reminder sound"], BUFF_SOUNDS, "alerts", "buffSoundName")
     stack:Add(UI.OptionEdit(stack.inner, L["Custom reminder sound ID"], Setting("alerts", "buffCustomSound")))
     stack:Add(UI.OptionButton(stack.inner, L["Try the reminder"], L["Test"], function() ns.Buffs.Preview() end))
+    local move = UI.OptionButton(stack.inner, L["Reminder icons"], L["Move"], function()
+        ns.Reminder.SetMoving(not ns.Reminder.IsMoving())
+    end)
+    move.Sync = function() move.button:SetText(ns.Reminder.IsMoving() and L["Done"] or L["Move"]) end
+    stack:Add(move)
+    stack:Add(UI.OptionButton(stack.inner, L["Reminder icons' position"], L["Reset position"],
+        function() ns.Reminder.ResetPosition() end))
     Check(stack, L["Flash the screen edge with these reminders"], "alerts", "buffGlow")
     Check(stack, L["Also print these reminders in chat"], "alerts", "buffChat")
     Check(stack, L["Also show them in large text"], "alerts", "buffBigText")

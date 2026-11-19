@@ -189,7 +189,8 @@ ns.On("NW_REFRESH", function() Meter.UpdateLock() end)
 function Meter.Frame() return frame end
 function Meter.Grip() return grip end
 
--- The bars window's frame, built (hidden) if it doesn't exist yet: the reminder card sits on it.
+-- The bars window's frame, built (hidden) if it doesn't exist yet: the reminder icons sit on it
+-- until they're moved.
 function Meter.GetFrame()
     if not frame then Build() end
     return frame

@@ -168,7 +168,7 @@ end)
 ns.On("NW_INIT", function()
     C_Timer.NewTicker(5, function()
         UpdateAttention()
-        ns.Reminder.SyncActions() -- the bars window may have been moved
+        ns.Reminder.SyncActions() -- the icons follow the bars window until they're moved
     end)
 end)
 ns.On("BAG_UPDATE_DELAYED", function() ns.Reminder.Refresh() end)

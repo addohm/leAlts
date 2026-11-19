@@ -1,6 +1,6 @@
 -- Nothing Wasted: the buff reminder. When you leave an inn or city with a leveling buff missing, the
--- missing buffs' icons appear where the bars window was, large, with a pulsing yellow glow and a
--- small label under each. Hover one for the details; left-click to eat or use the sleeping bag;
+-- missing buffs' icons appear, large, with a pulsing yellow glow and a small label under each. They
+-- sit where the bars window is until you move them (Options → Alerts → Move). Hover one for the details; left-click to eat or use the sleeping bag;
 -- right-click to dismiss. An icon goes away when you get that buff; they all go when none are left
 -- or when you're back in a rested area. It can also show the reminder in large text near the top
 -- of the screen.
@@ -16,7 +16,9 @@ local LABEL_SPACE = 16 -- room under the icons for their labels
 local YELLOW = { 1, 0.82, 0 }
 local GLOW = "Interface\\Buttons\\UI-ActionButton-Border" -- the game's yellow button highlight
 
-local frame
+local frame, mover
+local moving = false -- showing sample icons to drag
+local SAMPLE = { "wellFed", "bag", "tent" }
 local buttons = {}
 local shown = {} -- the kinds currently shown
 local shownAt    -- GetTime() when the icons last came up
@@ -82,17 +84,58 @@ function Reminder.AddBagAction(def)
     return def
 end
 
+local Place
+
 local function Build()
     frame = CreateFrame("Frame", nil, UIParent)
     frame:SetSize(SIZE, SIZE + LABEL_SPACE)
     frame:SetFrameStrata("MEDIUM")
+    frame:SetMovable(true)
+    frame:SetClampedToScreen(true)
     frame:Hide()
+
+    -- While moving: a tinted cover over the sample icons that takes the drag.
+    mover = CreateFrame("Button", nil, frame)
+    mover:SetPoint("TOPLEFT", -8, 22)
+    mover:SetPoint("BOTTOMRIGHT", 8, -4)
+    mover:SetFrameLevel(frame:GetFrameLevel() + 20)
+    local bg = mover:CreateTexture(nil, "BACKGROUND")
+    bg:SetAllPoints()
+    bg:SetColorTexture(0.2, 0.5, 1, 0.3)
+    local text = mover:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+    text:SetPoint("TOP", 0, -4)
+    text:SetText(L["Reminder icons: drag to move"])
+    mover:RegisterForDrag("LeftButton")
+    mover:RegisterForClicks("RightButtonUp")
+    mover:SetScript("OnDragStart", function() frame:StartMoving() end)
+    mover:SetScript("OnDragStop", function()
+        frame:StopMovingOrSizing()
+        -- Saved by the centre, so any number of icons stays centred on the spot.
+        local x, y = frame:GetCenter()
+        ns.db.settings.alerts.reminderPos = { x, y }
+        Place()
+    end)
+    mover:SetScript("OnClick", function() Reminder.SetMoving(false) end)
+    mover:SetScript("OnEnter", function(self)
+        GameTooltip:SetOwner(self, "ANCHOR_TOP")
+        GameTooltip:AddLine(L["Drag to move."])
+        GameTooltip:AddLine(L["Right-click when done."], 0.7, 0.7, 0.7)
+        GameTooltip:Show()
+    end)
+    mover:SetScript("OnLeave", GameTooltip_Hide)
+    mover:Hide()
 end
 
--- Centers the icons (with their labels) on the bars window, wherever it is and however big.
-local function Place()
+-- Centers the icons (with their labels) on their saved spot, or on the bars window until they've
+-- been moved.
+function Place()
     frame:ClearAllPoints()
-    frame:SetPoint("CENTER", ns.Meter.GetFrame(), "CENTER", 0, 0)
+    local pos = ns.db.settings.alerts.reminderPos
+    if pos then
+        frame:SetPoint("CENTER", UIParent, "BOTTOMLEFT", pos[1], pos[2])
+    else
+        frame:SetPoint("CENTER", ns.Meter.GetFrame(), "CENTER", 0, 0)
+    end
 end
 
 local function CreateButton(i)
@@ -140,8 +183,9 @@ end
 
 -- Lays out the icons; `keepPulse` leaves the glows pulsing as they are (a label update).
 local function Layout(keepPulse)
+    local kinds = moving and SAMPLE or shown
     local x = 0
-    for i, kind in ipairs(shown) do
+    for i, kind in ipairs(kinds) do
         local b = buttons[i] or CreateButton(i)
         buttons[i] = b
         b.buffKind = kind
@@ -160,7 +204,7 @@ local function Layout(keepPulse)
             b.pulse:Play()
         end
     end
-    for i = #shown + 1, #buttons do
+    for i = #kinds + 1, #buttons do
         buttons[i].buffKind = nil
         buttons[i].pulse:Stop()
         buttons[i]:Hide()
@@ -175,16 +219,19 @@ function Reminder.Show(kinds)
     if not frame then Build() end
     shown = {}
     for _, k in ipairs(kinds) do shown[#shown + 1] = k end
-    Place()
-    frame:Show()
-    Layout()
     shownAt = GetTime()
+    -- While moving, the sample stays up; these show when moving is done.
+    if not moving then
+        Place()
+        frame:Show()
+        Layout()
+    end
     ns.Fire("NW_REMINDER")
 end
 
 -- Keeps only the icons still missing; hides when none are left.
 function Reminder.Keep(stillMissing)
-    if not frame or not frame:IsShown() then return end
+    if not shownAt then return end
     local keep = {}
     for _, k in ipairs(shown) do
         if stillMissing[k] then keep[#keep + 1] = k end
@@ -193,7 +240,7 @@ function Reminder.Keep(stillMissing)
         Reminder.Hide()
     elseif #keep ~= #shown then
         shown = keep
-        Layout()
+        if not moving then Layout() end
     end
 end
 
@@ -201,7 +248,7 @@ function Reminder.Hide()
     shown = {}
     local was = shownAt ~= nil
     shownAt = nil
-    if frame then
+    if frame and not moving then
         for _, b in ipairs(buttons) do b.pulse:Stop() end
         frame:Hide()
     end
@@ -246,7 +293,7 @@ function Reminder.SyncActions()
         a.icon = nil
         a:Hide()
     end
-    if not frame or not frame:IsShown() then return end
+    if not frame or not frame:IsShown() or moving then return end
     for i in ipairs(shown) do
         local b = buttons[i]
         local action = b and b.def and b.def.action
@@ -270,8 +317,55 @@ end)
 
 -- Updates the labels of the icons that are up (the XP missed changes as you kill).
 function Reminder.Refresh()
-    if frame and frame:IsShown() and #shown > 0 then Layout(true) end
+    if frame and frame:IsShown() and (moving or #shown > 0) then Layout(true) end
 end
+
+-- Moving: sample icons under a cover you drag; right-click it, or click Done, to finish. Real
+-- reminders that come up meanwhile show when it's done. Not in combat, since the click-to-use
+-- buttons can't be moved then.
+function Reminder.SetMoving(on)
+    on = on and true or false
+    if on == moving then return end
+    if on and InCombatLockdown() then
+        ns.Print(L["The reminder icons can't be moved in combat."])
+        return
+    end
+    if not frame then Build() end
+    moving = on
+    if moving then
+        Place()
+        frame:Show()
+        mover:Show()
+        Layout()
+    else
+        mover:Hide()
+        if shownAt then
+            Layout()
+        else
+            for _, b in ipairs(buttons) do b.pulse:Stop() end
+            frame:Hide()
+        end
+    end
+    Reminder.SyncActions()
+    ns.Fire("NW_REFRESH")
+end
+
+function Reminder.IsMoving()
+    return moving
+end
+
+-- Back to the middle of the screen.
+function Reminder.ResetPosition()
+    local x, y = UIParent:GetCenter()
+    ns.db.settings.alerts.reminderPos = { x, y }
+    if frame then Place() end
+end
+
+-- Closing the options ends moving.
+ns.On("NW_WINDOW_HIDDEN", function() Reminder.SetMoving(false) end)
+
+-- For the tests.
+function Reminder.Mover() return mover end
 
 -- GetTime() when the icons came up, or nil while they're not up.
 function Reminder.ShownSince()
@@ -279,7 +373,7 @@ function Reminder.ShownSince()
 end
 
 function Reminder.IsShown()
-    return frame and frame:IsShown() or false
+    return shownAt ~= nil
 end
 
 -- The kinds currently shown (for the tests).
