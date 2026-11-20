@@ -8,6 +8,7 @@ All notable changes to this project are documented here. The format follows
 
 ### Changed
 
+- The reminder icons are evenly spaced: each is as wide as the longest label (2026-11-20).
 - **Nothing Wasted is now leAlts:** the addon folder, title, chat name, window titles and art. The
   command is `/lealts`; `/nw` still works. The saved data is the same, but the game keeps it in a
   file named after the addon: copy `SavedVariables/NothingWasted.lua` to `leAlts.lua` to keep it,
@@ -16,8 +17,8 @@ All notable changes to this project are documented here. The format follows
 
 ### Added
 
-- **Move the reminder icons:** Options → Alerts → Reminder icons → Move shows sample icons to drag
-  anywhere; right-click them or click Done. They stay there instead of following the bars window,
+- **Move the reminder icons:** Options → Alerts → Reminder icons → Move shows the reminders you
+  have turned on, to drag anywhere; right-click them or click Done. They stay there instead of following the bars window,
   so both can be up at once. Reset position puts them in the middle of the screen (2026-11-19).
 - **Always show the bars window** (Options → Bars window, off by default): up from login and
   wherever you go; closing it hides it until the next login or reload (2026-11-19).

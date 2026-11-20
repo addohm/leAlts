@@ -18,7 +18,7 @@ local GLOW = "Interface\\Buttons\\UI-ActionButton-Border" -- the game's yellow b
 
 local frame, mover
 local moving = false -- showing sample icons to drag
-local SAMPLE = { "wellFed", "bag", "tent" }
+local SAMPLE = { { "wellFed", "wellFed" }, { "bag", "bagBuff" }, { "tent", "tent" } } -- kind, setting
 local buttons = {}
 local shown = {} -- the kinds currently shown
 local shownAt    -- GetTime() when the icons last came up
@@ -182,9 +182,23 @@ local function CreateButton(i)
 end
 
 -- Lays out the icons; `keepPulse` leaves the glows pulsing as they are (a label update).
+-- The sample to move: the reminders that are turned on (all of them if none are).
+local function SampleKinds()
+    local kinds = {}
+    for _, s in ipairs(SAMPLE) do
+        if ns.db.settings.alerts[s[2]] then kinds[#kinds + 1] = s[1] end
+    end
+    if #kinds == 0 then
+        for _, s in ipairs(SAMPLE) do kinds[#kinds + 1] = s[1] end
+    end
+    return kinds
+end
+
 local function Layout(keepPulse)
-    local kinds = moving and SAMPLE or shown
-    local x = 0
+    local kinds = moving and SampleKinds() or shown
+    -- Every icon gets a slot as wide as the widest label (or the icon, if wider), so labels never
+    -- overlap and the icons are evenly spaced.
+    local slot = SIZE
     for i, kind in ipairs(kinds) do
         local b = buttons[i] or CreateButton(i)
         buttons[i] = b
@@ -192,8 +206,11 @@ local function Layout(keepPulse)
         b.def = KINDS[kind]()
         b.icon:SetTexture(b.def.icon)
         b.label:SetText(b.def.label)
-        -- Each icon gets a slot as wide as its label (or the icon, if wider), so labels never overlap.
-        local slot = math.max(SIZE, math.ceil(b.label:GetStringWidth() or SIZE))
+        slot = math.max(slot, math.ceil(b.label:GetStringWidth() or SIZE))
+    end
+    local x = 0
+    for i = 1, #kinds do
+        local b = buttons[i]
         b:ClearAllPoints()
         b:SetPoint("TOPLEFT", x + (slot - SIZE) / 2, 0)
         x = x + slot + GAP

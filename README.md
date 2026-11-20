@@ -74,9 +74,10 @@ button for the bars window.
   details, right-click to dismiss). They come with the alert sound and a screen-edge flash (each can
   be turned off).
   - **Where:** centred where the bars window is, until you move them. Options → Alerts →
-    Reminder icons → **Move** shows sample icons to drag anywhere; right-click them or click **Done**
-    (closing the options works too). **Reset position** puts them in the middle of the screen. Not
-    in combat.
+    Reminder icons → **Move** shows the reminders you have turned on, to drag anywhere; right-click
+    them or click **Done** (closing the options works too). **Reset position** puts them in the
+    middle of the screen. Not in combat. The icons are evenly spaced, each as wide as the longest
+    label, and centred on the spot, so with one reminder turned off the other two sit in the middle.
   - "Not Well Fed": cooked food's Well Fed gives +5% XP from kills.
   - "Sleeping bag ready": resting in it gives up to +3% XP. Only when the bag is in your bags (a bag
     in the bank can't be used) and off cooldown.

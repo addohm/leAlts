@@ -591,7 +591,12 @@ return function(root)
         local mover = R.Mover()
         local frame = mover.parent
         check(mover:IsVisible(), "the cover is shown")
-        eq(Visible(), "bag,tent,wellFed", "with a sample of every icon")
+        eq(Visible(), "bag,tent,wellFed", "with a sample of every icon that's turned on")
+        settings.tent = false
+        c.ns.Reminder.Refresh()
+        eq(Visible(), "bag,wellFed", "one turned off isn't in the sample")
+        settings.tent = true
+        c.ns.Reminder.Refresh()
         check(not R.IsShown(), "which isn't a reminder")
         local _, rel = frame:GetPoint()
         check(rel == c.ns.Meter.GetFrame(), "at first on the bars window")
@@ -615,6 +620,15 @@ return function(root)
         check(not R.IsMoving(), "right-click finishes")
         check(not mover:IsVisible(), "the cover goes")
         eq(Visible(), "wellFed", "and the real icons show, where they were moved to")
+        -- Evenly spaced: every icon's slot is as wide as the widest label.
+        R.Show({ "wellFed", "bag", "tent" })
+        local xs = {}
+        for _, f in ipairs(c.frames) do
+            if f.buffKind and f:IsVisible() then xs[#xs + 1] = f.points[1][2] end
+        end
+        table.sort(xs)
+        check(#xs == 3 and xs[2] - xs[1] == xs[3] - xs[2], "the icons are evenly spaced")
+        R.Show({ "wellFed" })
         local _, rel3 = frame:GetPoint()
         check(rel3 == c.env.UIParent, "not on the bars window any more")
         R.Hide()
