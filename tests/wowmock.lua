@@ -1,4 +1,4 @@
--- A fake WoW client for headless tests of Nothing Wasted, under Lua 5.1.
+-- A fake WoW client for headless tests of leAlts, under Lua 5.1.
 --
 -- NewClient(opts) builds an isolated environment, loads the addon's files in .toc order into it and
 -- returns a client to drive. The mock is strict so real mistakes surface:
@@ -308,7 +308,7 @@ end
 
 local function ReadToc(root)
     local files, version = {}, nil
-    for line in io.lines(root .. "/NothingWasted/NothingWasted.toc") do
+    for line in io.lines(root .. "/leAlts/leAlts.toc") do
         line = line:gsub("\r", "")
         local v = line:match("^## Version:%s*(.-)%s*$")
         if v then version = v end
@@ -723,9 +723,9 @@ function M.NewClient(opts)
     client.env = env
     client.ns = {}
     for _, file in ipairs(files) do
-        local fn = assert(loadfile(root .. "/NothingWasted/" .. file))
+        local fn = assert(loadfile(root .. "/leAlts/" .. file))
         setfenv(fn, env)
-        fn("NothingWasted", client.ns)
+        fn("leAlts", client.ns)
     end
 
     -- Driving -------------------------------------------------------------------------------------
@@ -758,7 +758,7 @@ function M.NewClient(opts)
     end
 
     function client:Login()
-        self:Fire("ADDON_LOADED", "NothingWasted")
+        self:Fire("ADDON_LOADED", "leAlts")
         self:Fire("PLAYER_LOGIN")
         self:Fire("PLAYER_ENTERING_WORLD", true, false)
         self:Advance(6) -- let the login timers run

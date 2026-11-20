@@ -1,6 +1,6 @@
-"""Draws the Nothing Wasted icon (512/400/256/128 px) and banner (1600x500) into this folder.
+"""Draws the leAlts icon (512/400/256/128 px) and banner (1600x500) into this folder.
 
-Needs Pillow and the Inter font (bold and semibold). Point NW_FONT_BOLD and NW_FONT_SEMI at the
+Needs Pillow and the Inter font (bold and semibold). Point LEALTS_FONT_BOLD and LEALTS_FONT_SEMI at the
 font files, then run: python3 art/make_logo.py
 """
 import os
@@ -8,8 +8,8 @@ import os
 from PIL import Image, ImageDraw, ImageFont, ImageChops, ImageFilter
 
 OUT = os.path.dirname(os.path.abspath(__file__))
-BOLD = os.environ.get("NW_FONT_BOLD", "Inter-Bold.ttf")
-SEMI = os.environ.get("NW_FONT_SEMI", "Inter-SemiBold.ttf")
+BOLD = os.environ.get("LEALTS_FONT_BOLD", "Inter-Bold.ttf")
+SEMI = os.environ.get("LEALTS_FONT_SEMI", "Inter-SemiBold.ttf")
 S = 2048  # draw big, downsample for smooth edges
 
 GOLD = (242, 196, 74)
@@ -86,11 +86,11 @@ def icon(size=S):
 
 big = icon()
 for px in (512, 400, 256, 128):
-    big.resize((px, px), Image.LANCZOS).save(os.path.join(OUT, f"nothing-wasted-icon-{px}.png"))
+    big.resize((px, px), Image.LANCZOS).save(os.path.join(OUT, f"lealts-icon-{px}.png"))
 
 # The in-game icon: the game reads TGA with power-of-two sizes. Used by the .toc (AddOns list and
 # the addon menu) and the minimap button.
-MEDIA = os.path.join(os.path.dirname(OUT), "NothingWasted", "Media")
+MEDIA = os.path.join(os.path.dirname(OUT), "leAlts", "Media")
 os.makedirs(MEDIA, exist_ok=True)
 big.resize((128, 128), Image.LANCZOS).save(os.path.join(MEDIA, "Icon.tga"))
 
@@ -102,15 +102,15 @@ banner.paste(ic, (50, 50), ic)
 d = ImageDraw.Draw(banner)
 title = ImageFont.truetype(BOLD, 132)
 tag = ImageFont.truetype(SEMI, 44)
-d.text((500, 120), "Nothing Wasted", font=title, fill=GOLD)
+d.text((500, 120), "leAlts", font=title, fill=GOLD)
 d.text((506, 300), "Your alts are resting. Make it count.", font=tag, fill=(205, 214, 245))
 d.line([(506, 293), (1530, 293)], fill=(GOLD_DARK[0], GOLD_DARK[1], GOLD_DARK[2], 255), width=3)
-banner.convert("RGB").save(os.path.join(OUT, "nothing-wasted-banner.png"))
+banner.convert("RGB").save(os.path.join(OUT, "lealts-banner.png"))
 
 # Sanity checks on the layout (without looking at it): text inside the canvas, moon gold, bar blue.
-tb = d.textbbox((500, 120), "Nothing Wasted", font=title)
+tb = d.textbbox((500, 120), "leAlts", font=title)
 print("title bbox", tb, "fits:", tb[2] < W - 40)
 tg = d.textbbox((506, 300), "Your alts are resting. Make it count.", font=tag)
 print("tagline bbox", tg, "fits:", tg[2] < W - 40)
-i512 = Image.open(os.path.join(OUT, "nothing-wasted-icon-512.png")).convert("RGBA")
+i512 = Image.open(os.path.join(OUT, "lealts-icon-512.png")).convert("RGBA")
 print("moon pixel", i512.getpixel((int(560/4), int(860/4))), "bar pixel", i512.getpixel((int(1000/4), int(1600/4))), "corner", i512.getpixel((2, 2)))

@@ -6,6 +6,14 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+### Changed
+
+- **Nothing Wasted is now leAlts:** the addon folder, title, chat name, window titles and art. The
+  command is `/lealts`; `/nw` still works. The saved data is the same, but the game keeps it in a
+  file named after the addon: copy `SavedVariables/NothingWasted.lua` to `leAlts.lua` to keep it,
+  and remove the old `NothingWasted` folder. `tools\install_forever.cmd` does both. The repository
+  is now `addohm/leAlts` (2026-11-20).
+
 ### Added
 
 - **Move the reminder icons:** Options → Alerts → Reminder icons → Move shows sample icons to drag

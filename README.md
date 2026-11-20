@@ -1,4 +1,4 @@
-# Nothing Wasted
+# leAlts
 
 A World of Warcraft addon for WoW: Forever (Interface 16001) for leveling alts and earning Legacy
 points. It tracks every character on your account and makes sure nothing goes to waste: no alt sits
@@ -11,26 +11,30 @@ away from inns and cities is still being confirmed; see [ROADMAP.md](ROADMAP.md)
 
 ## Install
 
-Download `NothingWasted-<version>.zip` from the [release folder](release/) and unzip it into your
-client's `Interface/AddOns` folder, or copy the `NothingWasted` folder into your client's `Interface/AddOns` folder (for Forever,
+Download `leAlts-<version>.zip` from the [release folder](release/) and unzip it into your
+client's `Interface/AddOns` folder, or copy the `leAlts` folder into your client's `Interface/AddOns` folder (for Forever,
 `_forever_/Interface/AddOns`), then log in each character once so it gets recorded.
+
+**Coming from Nothing Wasted** (the old name, up to 1.1.2): delete the `NothingWasted` folder from
+`Interface/AddOns`, and to keep your data, copy `WTF/Account/<account>/SavedVariables/NothingWasted.lua`
+to `leAlts.lua` in the same folder before starting the game.
 
 ## Commands
 
 | Command | What it does |
 | --- | --- |
-| `/nw` | Show or hide the full window |
-| `/nw bars` | Show or hide the small bars window |
-| `/nw [item]` | Find an item on all your characters (an item link or part of a name) |
-| `/nw options` | Open the options |
-| `/nw minimap` | Show or hide the minimap button |
-| `/nw reset` | Forget every character (asks first) |
-| `/nw chars` | List every saved character, what its bar shows, and which session last saved the data |
-| `/nw rate` | Measure the rested XP rate: shows the live values and expected rate, sets a mark, and on the next run shows the rate since the mark (works across a logout). Also lists automatic checks made at each login. `/nw rate reset` starts over |
-| `/nw buffs` | What the leveling buff reminders see: Well Fed, where the sleeping bag is, its cooldown and buff, Boosted Rest, food that gives Well Fed, and the XP missed without Well Fed and the bag |
-| `/nw perks` | List the Legacy perk nodes, to check perk spell IDs |
+| `/lealts` | Show or hide the full window |
+| `/lealts bars` | Show or hide the small bars window |
+| `/lealts [item]` | Find an item on all your characters (an item link or part of a name) |
+| `/lealts options` | Open the options |
+| `/lealts minimap` | Show or hide the minimap button |
+| `/lealts reset` | Forget every character (asks first) |
+| `/lealts chars` | List every saved character, what its bar shows, and which session last saved the data |
+| `/lealts rate` | Measure the rested XP rate: shows the live values and expected rate, sets a mark, and on the next run shows the rate since the mark (works across a logout). Also lists automatic checks made at each login. `/lealts rate reset` starts over |
+| `/lealts buffs` | What the leveling buff reminders see: Well Fed, where the sleeping bag is, its cooldown and buff, Boosted Rest, food that gives Well Fed, and the XP missed without Well Fed and the bag |
+| `/lealts perks` | List the Legacy perk nodes, to check perk spell IDs |
 
-`/nothingwasted` works too, in case another addon uses `/nw`. The minimap button and the game's
+`/nw` works too, for short. The minimap button and the game's
 addon menu by the minimap open the full window (right-click for options); shift-click the minimap
 button for the bars window.
 
@@ -92,7 +96,7 @@ button for the bars window.
     worked out from the XP before any bonus: kill XP is your XP gained less quest rewards, the
     rested bonus (the drop in your rested pool) and exploration XP. It keeps counting in combat,
     from when a buff runs out. Each character's running totals are kept and shown in its tooltip
-    and in `/nw buffs`. Can be turned off.
+    and in `/lealts buffs`. Can be turned off.
   - Extras, all on by default and each can be turned off (Options → Alerts): a kill without a buff brings dismissed
     icons back (at most every 5 minutes; after the fight), large text near the top of the screen,
     a flash of the game's taskbar icon (for when you're alt-tabbed), and, while the icons are up, a
@@ -120,7 +124,7 @@ button for the bars window.
 - Drag the title to move it (or lock it in the options). Click the title to open the full window.
 - Drag the grip in its bottom-right corner to resize it: the width is free, and the height snaps to
   whole bars and sets how many it shows. Locking hides the grip.
-- `/nw bars`, or shift-click the minimap button, shows it anywhere. A bars window you open yourself
+- `/lealts bars`, or shift-click the minimap button, shows it anywhere. A bars window you open yourself
   stays open when you leave; an option makes it hide too.
 - Every character you've logged into gets a bar. Max-level characters can be shown or hidden;
   a character without XP data yet shows "log in to update".
@@ -130,7 +134,7 @@ button for the bars window.
 
 ### Full window
 
-- Opens only when you ask: `/nw`, the minimap button, or the bars window's title.
+- Opens only when you ask: `/lealts`, the minimap button, or the bars window's title.
 - Tabs: Rested, Leveling, Cooldowns, Professions, Items and Legacy. Tabs with more than one view
   show them as links under the tabs:
   - **Leveling:** Who to play next, Pace, Spells to train, Mount gold.
@@ -147,7 +151,7 @@ button for the bars window.
     it again.
   - **Forget** removes a character you've deleted, including max-level ones that have no bar. Logging
     in to it adds it back. The character you're playing can't be forgotten (it would be added
-    straight back); `/nw reset` forgets everyone.
+    straight back); `/lealts reset` forgets everyone.
 - Each tab reopens the view you used last.
 - Drag the grip in the bottom-right corner to resize the window; the size is remembered.
 
@@ -187,7 +191,7 @@ button for the bars window.
   many are waiting. Mail expiring within 7 days is yellow, within 3 days red.
 - **At login**, a list of characters with mail expiring within 7 days (can be turned off).
 - **Item search** across all characters' bags, bank, mailbox and mail in transit, from the addon
-  window or with `/nw [item link]`.
+  window or with `/lealts [item link]`.
 - **Free bag space** per character.
 
 ### Legacy
@@ -202,7 +206,7 @@ button for the bars window.
 
 - Designed for a single account. Hardcore characters are ignored while they're hardcore.
 - Settings live in the addon's own options window.
-- Slash commands: `/nw`, with `/nothingwasted` as a fallback in case another addon uses `/nw`.
+- Slash commands: `/lealts`, and `/nw` for short.
 - English, with a starter set of translations: German, French, Spanish, Russian, Simplified Chinese
   and Korean. Translations come from contributors (for example CurseForge's localization tool), so
   each ships when it's ready. More languages later.
@@ -224,12 +228,12 @@ button for the bars window.
 
 ## Repository layout
 
-- `NothingWasted/`: the addon. This folder is what gets installed.
+- `leAlts/`: the addon. This folder is what gets installed.
 - `tests/`: headless tests that run the addon against a fake WoW API under Lua 5.1.
 - `tools/`: `install_forever.cmd`, which installs your build into the game on Windows and packs
   the release zip, and `make_release.py`, which builds `release/`.
 - `art/`: the icon and banner, and the script that draws them.
-- `release/`: the packaged addon, `NothingWasted-<version>.zip` (unzip into `Interface/AddOns`).
+- `release/`: the packaged addon, `leAlts-<version>.zip` (unzip into `Interface/AddOns`).
 - `LISTING.md`: the CurseForge and Wago page text, screenshot list and release notes.
 
 ## Development
@@ -241,9 +245,9 @@ python3 tests/run_tests.py
 ```
 
 To try the latest pushed build on Windows, run `tools\install_forever.cmd` from a terminal. It
-pulls the repo, copies `NothingWasted/` into the Forever client's AddOns folder (creating it on the
-first run), and stamps the commit so `/nw help` shows which build is running. It also packs
-`NothingWasted-<version>.zip` on your desktop, ready to upload. Edit `WOW` at the top if your
+pulls the repo, copies `leAlts/` into the Forever client's AddOns folder (creating it on the
+first run), and stamps the commit so `/lealts help` shows which build is running. It also packs
+`leAlts-<version>.zip` on your desktop, ready to upload. Edit `WOW` at the top if your
 client is installed elsewhere.
 
 ## Docs

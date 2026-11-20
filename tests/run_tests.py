@@ -1,4 +1,4 @@
-"""Runs the headless tests for Nothing Wasted under Lua 5.1 (via lupa).
+"""Runs the headless tests for leAlts under Lua 5.1 (via lupa).
 
 Usage: python tests/run_tests.py
 Exits non-zero if any test fails.

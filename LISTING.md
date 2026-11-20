@@ -1,4 +1,4 @@
-# Nothing Wasted: CurseForge and Wago listing
+# leAlts: CurseForge and Wago listing
 
 Copy-paste material for the project pages. Placeholders are in [brackets].
 
@@ -8,13 +8,13 @@ Copy-paste material for the project pages. Placeholders are in [brackets].
 
 | Field | Value |
 | --- | --- |
-| Name | Nothing Wasted |
-| Slug | `nothing-wasted` |
+| Name | leAlts |
+| Slug | `lealts` |
 | Game version | WoW: Forever (Interface 16001, client 1.60.1) |
 | Author | addohm |
 | License | [choose: All Rights Reserved, MIT, ...] |
-| Source | https://github.com/addohm/nothing-wasted |
-| Issues | https://github.com/addohm/nothing-wasted/issues |
+| Source | https://github.com/addohm/leAlts |
+| Issues | https://github.com/addohm/leAlts/issues |
 
 **Categories**
 - CurseForge: Quests & Leveling (main), Professions, Bags & Inventory, Mail
@@ -27,7 +27,7 @@ Copy-paste material for the project pages. Placeholders are in [brackets].
 
 **Short tagline** (for images or a Discord post)
 
-> Your alts are resting. Nothing Wasted makes sure it counts.
+> Your alts are resting. leAlts makes sure it counts.
 
 ---
 
@@ -35,12 +35,12 @@ Copy-paste material for the project pages. Placeholders are in [brackets].
 
 *(Paste as Markdown. Both sites accept it.)*
 
-### Nothing Wasted
+### leAlts
 
 **Built for WoW: Forever, where leveling alts earns Legacy points.**
 
 Every alt you're not playing is quietly building rested XP, and every one of them eventually hits
-the cap and starts wasting it. Nothing Wasted watches all your characters at once, so you always
+the cap and starts wasting it. leAlts watches all your characters at once, so you always
 know who to play next and nothing sits idle: no capped rested XP, no ready cooldown left unused,
 no mail left to expire.
 
@@ -92,7 +92,7 @@ no mail left to expire.
 
 - Mail you send to your alts is recorded when you send it, so you know what's waiting before you
   log in. Expiring mail turns yellow, then red, and you're told at login.
-- Search every character's bags, bank, mailbox and mail in transit: `/nw linen cloth`.
+- Search every character's bags, bank, mailbox and mail in transit: `/lealts linen cloth`.
 
 #### Legacy
 
@@ -101,9 +101,9 @@ no mail left to expire.
 
 #### Commands
 
-- `/nw`: the full window. `/nw bars`: the bars window. `/nw [item]`: item search.
-- `/nw options`, `/nw minimap`, `/nw chars`, `/nw rate`, `/nw buffs`, `/nw help`
-- `/nothingwasted` works too.
+- `/lealts`: the full window. `/lealts bars`: the bars window. `/lealts [item]`: item search.
+- `/lealts options`, `/lealts minimap`, `/lealts chars`, `/lealts rate`, `/lealts buffs`, `/lealts help`
+- `/nw` works too, for short.
 
 #### Good to know
 
@@ -165,15 +165,15 @@ character names you're happy to show.
 > - Mail sent to alts, expiring mail warnings, item search across all characters
 > - Legacy goals and an account planner
 > - Any game sound for alerts, including a random NPC farewell
-> - `/nw rate` to check the rested XP rate in game
+> - `/lealts rate` to check the rested XP rate in game
 
 ---
 
 ## Before publishing
 
 - Confirm the remaining open facts in ROADMAP.md, mainly the away-from-rest rate.
-- Bump `## Version` in `NothingWasted.toc` if needed, move the CHANGELOG entries under the version,
+- Bump `## Version` in `leAlts.toc` if needed, move the CHANGELOG entries under the version,
   and tag the release (see DEPLOY.md).
 - Add the project IDs to the `.toc` (`## X-Curse-Project-ID`, `## X-Wago-ID`) and set up the
   packager.
-- Project icon: `art/nothing-wasted-icon-400.png`, the same badge as the in-game minimap button.
+- Project icon: `art/lealts-icon-400.png`, the same badge as the in-game minimap button.

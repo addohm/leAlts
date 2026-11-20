@@ -4,7 +4,7 @@ Guidance for coding assistants working in this repository.
 
 ## Layout
 
-- `NothingWasted/`: the addon. `NothingWasted.toc` sets the load order; its `## Version` is the only
+- `leAlts/`: the addon. `leAlts.toc` sets the load order; its `## Version` is the only
   version source.
   - `Locales/`: strings. English text is the key (`L["..."]`); other locales are filled by the
     CurseForge packager.
@@ -17,7 +17,7 @@ Guidance for coding assistants working in this repository.
     `Leveling.lua`: read the game and save per character. `Alerts.lua` scans the saved data;
     `Buffs.lua` reminds about missing leveling buffs (Well Fed XP, the sleeping bag, the Camp
     Tent's Boosted Rest).
-    `RateCheck.lua` measures the rested rates (`/nw rate`, and a check at each login); it loads
+    `RateCheck.lua` measures the rested rates (`/lealts rate`, and a check at each login); it loads
     before `Character.lua` so its login handler sees the old saved values.
   - `UI/`: the full window (`Window.lua`: tabs, view links under a tab, options behind the gear)
     and its pages (`*Page.lua`, `*Pages.lua`, registered with `Window.AddPage`; a page's `group`
@@ -25,18 +25,18 @@ Guidance for coding assistants working in this repository.
     when resting (`Meter.lua`); the glowing buff icons shown when a leveling buff is
     missing, on the bars window until moved (`Reminder.lua`); the bars both use (`Bars.lua`); the character tooltip
     (`Tooltip.lua`, `Sections.lua`); widgets, the screen glow and the minimap button.
-  - `Slash.lua`: `/nw` and the popups.
+  - `Slash.lua`: `/lealts` and the popups.
 - `tests/`: `wowmock.lua` (a strict fake WoW client), `smoke.lua` (scenarios), `run_tests.py`.
 - `.pkgmeta`: packaging for CurseForge and Wago.
 - `LISTING.md`: the CurseForge and Wago page text (summary, description, screenshot list, release
   notes). Keep its feature list in step with README.md.
-- `release/`: `NothingWasted-<version>.zip`, built by `tools/make_release.py` from the committed
+- `release/`: `leAlts-<version>.zip`, built by `tools/make_release.py` from the committed
   addon files. Rebuild it when cutting a release.
 - `art/`: the icon (512/400/256/128 px) and banner, drawn by `art/make_logo.py` (Pillow + Inter),
-  which also writes the in-game icon `NothingWasted/Media/Icon.tga` (128 px; the game needs TGA).
+  which also writes the in-game icon `leAlts/Media/Icon.tga` (128 px; the game needs TGA).
 - `tools/install_forever.cmd`: pulls and copies the addon into the user's Forever client on Windows,
-  stamps the commit into the installed `NothingWasted/Build.lua` (empty in the repo and in releases),
-  and packs `NothingWasted-<version>.zip` on the desktop with `git archive`.
+  stamps the commit into the installed `leAlts/Build.lua` (empty in the repo and in releases),
+  and packs `leAlts-<version>.zip` on the desktop with `git archive`.
   Keep it CRLF (`.gitattributes`).
 
 ## Rules
@@ -49,6 +49,8 @@ Guidance for coding assistants working in this repository.
 - Files share state through the namespace (`local _, ns = ...`). The only globals are
   `NothingWastedDB`, `NothingWastedFrame`, `NothingWastedMinimapButton`,
   `NothingWasted_OnAddonCompartmentClick` and the slash/popup registrations. The tests enforce this.
+  These internal names (and `SLASH_NOTHINGWASTED`, the `NOTHINGWASTED_*` popups) are from the old
+  name, Nothing Wasted; they stay so saved data and window positions carry over.
 - New settings go in `DEFAULT_SETTINGS` in `Core.lua`, so existing installs pick them up.
 - Loop over characters with `ns.Chars()`, which skips untracked ones (`c.untracked`, set on
   Options → Characters). Use `ns.db.chars` directly only for saving and the Characters page.
@@ -75,7 +77,7 @@ To try it in game on Windows, push, then run `tools\install_forever.cmd` and `/r
    - `SECURITY.md`: when what the addon can access or store changes.
    - `HANDOFF.md`: when work in progress moves on.
    - This file: when the layout, workflow or conventions change.
-   - `NothingWasted.toc` `## Version`: when cutting a release, then `python3 tools/make_release.py`.
+   - `leAlts.toc` `## Version`: when cutting a release, then `python3 tools/make_release.py`.
 3. Run the tests, check that nothing secret-looking is staged, then commit.
 
 ## Don't

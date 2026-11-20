@@ -7,7 +7,7 @@ problems in a public issue.
 
 ## What the addon can access
 
-Nothing Wasted runs inside the World of Warcraft addon sandbox. It reads your
+leAlts runs inside the World of Warcraft addon sandbox. It reads your
 character's name, realm, class, level, XP, rested XP, rested status, zone, gold, professions, skill
 levels and known recipes, reputations and currencies, cooldowns, your own buffs, quest progress, Legacy perks and
 challenge progress, the contents of bags, bank and mailbox, and the mail you send to your own

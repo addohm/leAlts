@@ -1,12 +1,12 @@
 # Roadmap
 
-What's done for Nothing Wasted and what's next. Update it in the same commit as the change.
+What's done for leAlts and what's next. Update it in the same commit as the change.
 [README.md](README.md) describes the features.
 
 ## Next, in order
 
 1. **Check the away-from-rest rate in game.** The inn rate and the rest of the first in-game pass
-   checked out. Set `/nw rate`, log out somewhere that isn't an inn or city, and run it again after
+   checked out. Set `/lealts rate`, log out somewhere that isn't an inn or city, and run it again after
    a few hours; the login checks it lists help too.
 2. **Confirm the other open game facts** below, and fix `Data.lua` where they differ.
 3. **Release** on CurseForge and Wago (see DEPLOY.md; page text in LISTING.md, icon and banner in
@@ -15,7 +15,7 @@ What's done for Nothing Wasted and what's next. Update it in the same commit as 
 ## To confirm in game
 
 - **Rested rate away from rest:** a quarter of the inn rate (the Classic rule). In progress: being
-  measured with `/nw rate` across a logout outside an inn or city.
+  measured with `/lealts rate` across a logout outside an inn or city.
 - **Well Rested cap:** whether +4% per rank multiplies the cap (rank 5: 180%) or adds to it (170%). The
   addon multiplies. Long term: it only shows once a character with Well Rested reaches the cap.
 - **Cozy Sleeping Bag:** which of quests 79007 and 79008 is Alliance or Horde (either counts).
@@ -29,7 +29,7 @@ What's done for Nothing Wasted and what's next. Update it in the same commit as 
 - **Click to fix:** that clicking the icons eats and uses the bag (`SecureActionButtonTemplate`,
   `type1` item or toy), that the click buttons sit right over the icons (placed by `GetCenter`),
   and that food tooltips name Well Fed (English: "you will become well fed"). In other languages
-  the tooltip may word it differently; `/nw buffs` shows the food found.
+  the tooltip may word it differently; `/lealts buffs` shows the food found.
 - **Moving the reminder icons:** that dragging the sample works, the icons come up where they were
   dropped, and the click-to-use buttons sit over them afterwards.
 - **XP missed:** that the kill XP worked out (XP gained less `QUEST_TURNED_IN`'s reward, the drop
@@ -52,7 +52,7 @@ What's done for Nothing Wasted and what's next. Update it in the same commit as 
   (2026-11-06).
 - Untrained spells don't show in the spellbook, only at the trainer (2026-10-22).
 - The first mount at level 40 costs 100g (2026-10-22).
-- The inn rate matches: `/nw rate` measured 6.06% of a level per 8h at Well Rested rank 5, expected
+- The inn rate matches: `/lealts rate` measured 6.06% of a level per 8h at Well Rested rank 5, expected
   6.00% (2026-10-22).
 - Logging out in the Cozy Sleeping Bag gives no rested XP bonus; it isn't a rested area (2026-10-22).
 - Logging out by a campfire doesn't count as resting either (2026-10-22).
@@ -90,7 +90,7 @@ What's done for Nothing Wasted and what's next. Update it in the same commit as 
 - Core design: features, alerts, bars, Legacy goals and the name Well Rested (2026-10-22).
 - 1.0.0 release package prepared: changelog, listing and `release/NothingWasted-1.0.0.zip`
   (2026-10-23).
-- Renamed to Nothing Wasted (2026-10-22).
+- Renamed to Nothing Wasted (2026-10-22), then to leAlts (2026-11-20).
 - Scope set: leveling alts and Legacy points. Added cooldowns, sleeping bag, mail, item search,
   professions, leveling and Legacy planner features (2026-10-22).
 - Launch scope: every planned feature, including mail and item search. Starter set of six

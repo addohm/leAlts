@@ -1,6 +1,6 @@
 @echo off
-rem Update this repo from GitHub, copy Nothing Wasted into the WoW: Forever client, and pack
-rem NothingWasted-<version>.zip on the desktop.
+rem Update this repo from GitHub, copy leAlts into the WoW: Forever client, and pack
+rem leAlts-<version>.zip on the desktop.
 rem Run it from a terminal (from any folder), then restart the client, or /reload if Nothing
 rem Wasted was already loaded. It only pulls what's on GitHub: push your commits first.
 setlocal
@@ -10,8 +10,8 @@ rem a temporary copy does the pull (the original folder is passed along as the s
 rem It then hands over to the script just pulled, so changes to this script apply on the same run.
 if "%~1"=="--pull" goto pull
 if "%~1"=="--install" goto install
-copy /y "%~f0" "%TEMP%\nothing_wasted_install.cmd" >nul
-call "%TEMP%\nothing_wasted_install.cmd" --pull "%~dp0"
+copy /y "%~f0" "%TEMP%\lealts_install.cmd" >nul
+call "%TEMP%\lealts_install.cmd" --pull "%~dp0"
 exit /b
 
 :pull
@@ -37,10 +37,11 @@ for %%i in ("%~dp0..") do set "REPO=%%~fi"
 rem Change WOW if your client lives elsewhere (for example the _classic_beta_ folder).
 rem Inside ( ) blocks, always quote paths: the ) in "Program Files (x86)" would end the block.
 set "WOW=C:\Program Files (x86)\World of Warcraft\_forever_"
-set "ADDON=%WOW%\Interface\AddOns\NothingWasted"
+set "ADDONS=%WOW%\Interface\AddOns"
+set "ADDON=%ADDONS%\leAlts"
 
-if not exist "%REPO%\NothingWasted\NothingWasted.toc" (
-  echo Can't find the addon in "%REPO%\NothingWasted". Is this script in the repo's tools folder?
+if not exist "%REPO%\leAlts\leAlts.toc" (
+  echo Can't find the addon in "%REPO%\leAlts". Is this script in the repo's tools folder?
   set "RESULT=1"
   goto done
 )
@@ -48,6 +49,20 @@ if not exist "%WOW%\" (
   echo Can't find the WoW client at "%WOW%". Fix WOW at the top of this script.
   set "RESULT=1"
   goto done
+)
+
+rem leAlts was called Nothing Wasted until 2026-11-20. Remove the old folder, so the two don't both
+rem load, and carry the saved data over: the game names that file after the addon folder. It's
+rem copied only where leAlts has none yet, so this happens once.
+if exist "%ADDONS%\NothingWasted\" (
+  echo Removing the old "NothingWasted" folder: leAlts replaces it.
+  rmdir /s /q "%ADDONS%\NothingWasted"
+)
+for /d %%a in ("%WOW%\WTF\Account\*") do (
+  if exist "%%a\SavedVariables\NothingWasted.lua" if not exist "%%a\SavedVariables\leAlts.lua" (
+    copy /y "%%a\SavedVariables\NothingWasted.lua" "%%a\SavedVariables\leAlts.lua" >nul
+    echo Carried the saved data over to leAlts in account folder "%%~nxa".
+  )
 )
 
 rem First install: create the addon folder (and Interface\AddOns if the client has none yet).
@@ -64,12 +79,12 @@ if not exist "%ADDON%\" (
 rem WoW reads the addon's file list (the .toc) only when the game starts. If it changed, /reload
 rem isn't enough: the game must be restarted.
 set "RESTART=1"
-if exist "%ADDON%\NothingWasted.toc" (
-  fc /b "%REPO%\NothingWasted\NothingWasted.toc" "%ADDON%\NothingWasted.toc" >nul && set "RESTART=0"
+if exist "%ADDON%\leAlts.toc" (
+  fc /b "%REPO%\leAlts\leAlts.toc" "%ADDON%\leAlts.toc" >nul && set "RESTART=0"
 )
 
 rem /MIR makes the installed folder an exact copy (files no longer in the repo are deleted).
-robocopy "%REPO%\NothingWasted" "%ADDON%" /MIR /IS /IT
+robocopy "%REPO%\leAlts" "%ADDON%" /MIR /IS /IT
 rem robocopy exit codes below 8 mean success.
 if errorlevel 8 (
   echo Copy failed. Is the WoW folder writable, and the path above right?
@@ -80,29 +95,29 @@ if errorlevel 8 (
 rem Stamp the installed copy with the commit, so /nw help shows which build is running.
 rem "-dirty" means the copy includes changes that aren't committed.
 for /f %%h in ('git -C "%REPO%" rev-parse --short HEAD') do set "BUILD=%%h"
-for /f %%s in ('git -C "%REPO%" status --porcelain -- NothingWasted') do set "BUILD=%BUILD%-dirty"
+for /f %%s in ('git -C "%REPO%" status --porcelain -- leAlts') do set "BUILD=%BUILD%-dirty"
 > "%ADDON%\Build.lua" (
   echo local _, ns = ...
   echo ns.build = "%BUILD%"
 )
-echo Installed Nothing Wasted build %BUILD% into "%ADDON%"
+echo Installed leAlts build %BUILD% into "%ADDON%"
 
-rem Also pack the committed addon as NothingWasted-<version>.zip on the desktop, ready to upload
+rem Also pack the committed addon as leAlts-<version>.zip on the desktop, ready to upload
 rem to CurseForge or Wago. git archive takes only committed files (without the build stamp above),
-rem under a NothingWasted folder. The version is ## Version in the .toc. The desktop comes from
+rem under a leAlts folder. The version is ## Version in the .toc. The desktop comes from
 rem Windows, since OneDrive can move it.
 set "VERSION="
-for /f "tokens=3" %%v in ('findstr /b /c:"## Version:" "%REPO%\NothingWasted\NothingWasted.toc"') do set "VERSION=%%v"
+for /f "tokens=3" %%v in ('findstr /b /c:"## Version:" "%REPO%\leAlts\leAlts.toc"') do set "VERSION=%%v"
 set "DESKTOP=%USERPROFILE%\Desktop"
 for /f "usebackq delims=" %%d in (`powershell -NoProfile -Command "[Environment]::GetFolderPath('Desktop')"`) do set "DESKTOP=%%d"
 if "%VERSION%"=="" (
   echo No ## Version in the .toc, so no zip was made.
 ) else (
-  git -C "%REPO%" archive --format=zip --output="%DESKTOP%\NothingWasted-%VERSION%.zip" HEAD NothingWasted
+  git -C "%REPO%" archive --format=zip --output="%DESKTOP%\leAlts-%VERSION%.zip" HEAD leAlts
   if errorlevel 1 (
-    echo Couldn't write "%DESKTOP%\NothingWasted-%VERSION%.zip".
+    echo Couldn't write "%DESKTOP%\leAlts-%VERSION%.zip".
   ) else (
-    echo Packed "%DESKTOP%\NothingWasted-%VERSION%.zip" from the last commit.
+    echo Packed "%DESKTOP%\leAlts-%VERSION%.zip" from the last commit.
   )
 )
 if "%RESTART%"=="1" (

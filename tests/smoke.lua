@@ -1,4 +1,4 @@
--- Headless scenarios for Nothing Wasted. Returns a function(root) -> passed, failed.
+-- Headless scenarios for leAlts. Returns a function(root) -> passed, failed.
 local mock = require("wowmock")
 
 local HOUR, DAY = 3600, 86400
@@ -56,14 +56,14 @@ return function(root)
     test("1. fresh install on a max-level character", function()
         local c = mock.NewClient({ root = root, player = MAXI })
         c:Login()
-        check(c:ChatHas("type /nw"), "first-run hint printed")
+        check(c:ChatHas("type /lealts"), "first-run hint printed")
         local db = rawget(c.env, "NothingWastedDB")
         local maxi = db.chars["Maxi-Forever"]
         check(maxi and maxi.isMax, "Maxi saved as max level")
         check(c:Frame("NothingWastedFrame") == nil, "window not built before it's needed")
         c:Slash("")
         local frame = c:Frame("NothingWastedFrame")
-        check(frame and frame.shown, "/nw opens the window")
+        check(frame and frame.shown, "/lealts opens the window")
         local panel = TabPanel(c)
         eq(#c:Rows(panel), 0, "max-level characters hidden by default")
         db.settings.bars.showMax = true
@@ -74,11 +74,13 @@ return function(root)
         local tip = c:Hover(rows[1])
         check(tip:Has("Level 60"), "tooltip shows the level")
         c:Slash("")
-        check(not frame.shown, "/nw again hides the window")
-        local version = "v" .. c.env.C_AddOns.GetAddOnMetadata("NothingWasted", "Version"):gsub("%.", "%%.")
+        check(not frame.shown, "/lealts again hides the window")
+        local version = "v" .. c.env.C_AddOns.GetAddOnMetadata("leAlts", "Version"):gsub("%.", "%%.")
         check(c:ChatHas(version) == false, "no help yet")
         c:Slash("help")
         check(c:ChatHas(version), "help prints the version")
+        eq(c.env.SLASH_NOTHINGWASTED1, "/lealts", "the command is /lealts")
+        eq(c.env.SLASH_NOTHINGWASTED2, "/nw", "and /nw still works")
         db.settings.bars.showMax = false
         db1 = c:Logout()
     end)
@@ -113,10 +115,10 @@ return function(root)
         local tip = alphaRow and b:Hover(alphaRow)
         check(tip and tip:Has("Tailoring"), "the other character's tooltip shows its professions")
 
-        -- /nw chars says where the loaded data came from.
+        -- /lealts chars says where the loaded data came from.
         b:ClearChat()
         b:Slash("chars")
-        check(b:ChatHas("saved by Alpha%-Forever"), "/nw chars names the session that saved the data")
+        check(b:ChatHas("saved by Alpha%-Forever"), "/lealts chars names the session that saved the data")
 
         -- A secret value somewhere in the data is removed before saving, so the save can't fail.
         rawget(b.env, "NothingWastedDB").chars["Beta-Forever"].legacyProgress = { [1] = { name = mock.Secret("A challenge") } }
@@ -131,7 +133,7 @@ return function(root)
         eq(#b:Rows(b.ns.Meter.Frame()), 3, "a character without XP data still gets a bar")
         b:ClearChat()
         b:Slash("chars")
-        check(b:ChatHas("3 saved character"), "/nw chars lists them")
+        check(b:ChatHas("3 saved character"), "/lealts chars lists them")
         check(b:ChatHas("Gamma%-Forever.-no XP data yet"), "and says why a bar is empty")
     end)
 
@@ -230,14 +232,14 @@ return function(root)
         c:Fire("PLAYER_CAMPING")
         check(not R.IsShown(), "no logout reminder while the bag is on cooldown")
 
-        -- /nw buffs shows where the bag is.
+        -- /lealts buffs shows where the bag is.
         c.player.itemCooldowns[211527] = nil
         c.player.items[211527] = nil
         c.player.bankItems = { [211527] = 1 }
         c:ClearChat()
         c:Slash("buffs")
-        check(c:ChatHas("0 in bags, 1 in the bank"), "/nw buffs shows a banked bag")
-        check(c:ChatHas("Well Fed: no%."), "/nw buffs says when you're not Well Fed")
+        check(c:ChatHas("0 in bags, 1 in the bank"), "/lealts buffs shows a banked bag")
+        check(c:ChatHas("Well Fed: no%."), "/lealts buffs says when you're not Well Fed")
         c.player.auras[1248420] = 99999
         c:ClearChat()
         c:Slash("buffs")
@@ -537,7 +539,7 @@ return function(root)
         near(B.MissedXP("bag"), 10, 0.01, "one missing stack: 1% of 1,000")
         near(B.MissedXP("wellFed"), 70, 0.01, "Well Fed 5% of 1,000")
 
-        -- Running totals are saved per character and shown in its tooltip and /nw buffs.
+        -- Running totals are saved per character and shown in its tooltip and /lealts buffs.
         local me = rawget(c.env, "NothingWastedDB").chars["Sleepy-Forever"]
         near(me.missedXP.wellFed, 100, 0.01, "Well Fed total saved")
         near(me.missedXP.bag, 82, 0.01, "bag total saved")
@@ -547,7 +549,7 @@ return function(root)
         check(tip:Has("Missed without the sleeping bag") and tip:Has("about 82 XP"), "and the bag total")
         c:ClearChat()
         c:Slash("buffs")
-        check(c:ChatHas("Without the sleeping bag: about 10, 82 in all"), "/nw buffs gives both")
+        check(c:ChatHas("Without the sleeping bag: about 10, 82 in all"), "/lealts buffs gives both")
 
         -- Without the bag, nothing is missed for it.
         c.player.items[211527] = nil
@@ -726,7 +728,7 @@ return function(root)
         check(c:Hover(icon):Has("No food that gives Well Fed"), "and the tooltip says so")
         c:ClearChat()
         c:Slash("buffs")
-        check(c:ChatHas("Food that gives Well Fed in your bags: none found"), "/nw buffs says so too")
+        check(c:ChatHas("Food that gives Well Fed in your bags: none found"), "/lealts buffs says so too")
 
         -- The sleeping bag as a toy.
         c.player.items[211527], c.player.bagSlots[2] = nil, nil
@@ -794,7 +796,7 @@ return function(root)
         eq(Card(), "tent", "back when Boosted Rest wears off")
         c:ClearChat()
         c:Slash("buffs")
-        check(c:ChatHas("Boosted Rest from a Camp Tent %(1229451%): no"), "/nw buffs shows it")
+        check(c:ChatHas("Boosted Rest from a Camp Tent %(1229451%): no"), "/lealts buffs shows it")
 
         rawget(c.env, "NothingWastedDB").settings.alerts.tent = false
         c:Fire("UNIT_AURA", "player")
@@ -834,7 +836,7 @@ return function(root)
         check(texts:find("Kyol Brightwater") and texts:find("Tam Ashdown"), "bars show first and last names: " .. texts)
         b:ClearChat()
         b:Slash("chars")
-        check(b:ChatHas("Kyol Brightwater%-Forever"), "/nw chars too")
+        check(b:ChatHas("Kyol Brightwater%-Forever"), "/lealts chars too")
         b.env.SendMail("Kyol Brightwater", "hi", "")
         b:Fire("MAIL_SEND_SUCCESS")
         local kyol = rawget(b.env, "NothingWastedDB").chars["Kyol-Forever"]
@@ -846,7 +848,7 @@ return function(root)
         c:Login()
         c:ClearChat()
         c:Slash("rate")
-        check(c:ChatHas("rested 6,958"), "/nw rate shows the live rested XP")
+        check(c:ChatHas("rested 6,958"), "/lealts rate shows the live rested XP")
         check(c:ChatHas("Expected: 5%.00%% of a level per 8h resting %(%+243 per hour%)"), "and the expected rate")
         check(c:ChatHas("Mark set at %d%d:%d%d:%d%d with rested 6,958"), "first run sets a mark and shows its time")
         c:ClearChat()
@@ -887,7 +889,7 @@ return function(root)
         near(sample and sample.expectedRate, 5.0, 0.01, "against an expected 5%")
         d:ClearChat()
         d:Slash("rate")
-        check(d:ChatHas("Checks at login"), "/nw rate lists the login checks")
+        check(d:ChatHas("Checks at login"), "/lealts rate lists the login checks")
     end)
 
     test("1e. untracking and forgetting characters", function()
@@ -924,7 +926,7 @@ return function(root)
         eq(c.ns.Inventory.TotalCount(2589), 0, "its items aren't counted")
         eq(#c.ns.Alts(), 1, "it isn't an alt any more")
         c:Slash("chars")
-        check(c:ChatHas("Banky%-Forever.-not tracked"), "/nw chars still lists it, as not tracked")
+        check(c:ChatHas("Banky%-Forever.-not tracked"), "/lealts chars still lists it, as not tracked")
 
         -- Options, Characters lists every saved character, tracked or not.
         c.ns.Window.Show("chars")
@@ -977,7 +979,7 @@ return function(root)
         }
         local c = mock.NewClient({ root = root, db = db, now = now, player = KYOL })
         c:Login()
-        check(not c:ChatHas("type /nw"), "no first-run hint on later logins")
+        check(not c:ChatHas("type /lealts"), "no first-run hint on later logins")
         check(c:Frame("NothingWastedFrame") == nil, "the full window doesn't pop up by itself")
         local frame = c.ns.Meter.Frame()
         check(frame and frame.shown, "the bars window pops up when logging in somewhere resting")
@@ -1144,7 +1146,7 @@ return function(root)
 
         c:Slash("linen")
         local frame = c:Frame("NothingWastedFrame")
-        check(frame.shown, "/nw <item> opens the window")
+        check(frame.shown, "/lealts <item> opens the window")
         local texts = RowTexts(c, TabPanel(c))
         check(texts[1] and texts[1]:find("Linen Cloth"), "search result shown")
 
@@ -1346,7 +1348,7 @@ return function(root)
         check(kyol.trade and kyol.trade.commerce, "trade reputation read")
         check(c.ns.Meter.IsShown(), "bars window open (logged in resting)")
         c:Slash("")
-        check(c:Frame("NothingWastedFrame").shown, "/nw opens the full window")
+        check(c:Frame("NothingWastedFrame").shown, "/lealts opens the full window")
         local expectRows = { rested = true, cooldowns = true, pace = true, train = true, skills = true,
             bags = true, goals = true, choose = true, planner = true, chars = true, alerts = false }
         local ids = c.ns.Window.PageIDs()
