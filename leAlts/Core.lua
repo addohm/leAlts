@@ -151,47 +151,18 @@ function ns.Now()
     return time()
 end
 
--- The realm's name. Since client build 71037 (2026-11-20), GetRealmName() returns "" on Forever
--- (Blizzard's own UI moved to realm IDs then), but GetRealmID() still works. So the name is
--- remembered by ID whenever the game gives it. Data saved before that has no IDs: if every saved
--- character is on one realm, it's that one. Failing that, "Realm <id>".
-local realmCache
-function ns.Realm()
-    if realmCache then return realmCache end
-    local name = GetRealmName()
-    local id = GetRealmID and GetRealmID()
-    if issecretvalue and (issecretvalue(name) or issecretvalue(id)) then name, id = nil, nil end
-    if not ns.db then return type(name) == "string" and name or "" end
-    ns.db.realms = ns.db.realms or {}
-    if type(name) == "string" and name ~= "" then
-        if id then ns.db.realms[id] = name end
-        realmCache = name
-        return name
+-- Characters are saved by full name ("Coo Tur"). Forever's realms are megaservers with names
+-- unique across them, so the realm doesn't matter (and since client build 71037, 2026-11-20,
+-- GetRealmName() returns "" anyway).
+local function KeyFor(name, surname)
+    if type(surname) == "string" and surname ~= "" and not (issecretvalue and issecretvalue(surname)) then
+        return name .. " " .. surname
     end
-    if id and ns.db.realms[id] then
-        realmCache = ns.db.realms[id]
-        return realmCache
-    end
-    local only
-    for _, c in pairs(ns.db.chars) do
-        if c.realm and c.realm ~= "" then
-            if only and only ~= c.realm then
-                only = nil
-                break
-            end
-            only = c.realm
-        end
-    end
-    if only then
-        if id then ns.db.realms[id] = only end
-        realmCache = only
-        return only
-    end
-    return id and format(L["Realm %d"], id) or ""
+    return name
 end
 
 function ns.PlayerKey()
-    return UnitName("player") .. "-" .. ns.Realm()
+    return KeyFor(UnitName("player"))
 end
 
 function ns.Me()
@@ -277,7 +248,7 @@ end
 
 -- Folds two saved entries for one character together: the newer one's values win, anything only
 -- the older one has is kept, and the XP missed totals add up.
-local function MergeChar(a, b)
+function ns.MergeChar(a, b)
     local newer, older = a, b
     if (b.seenAt or b.savedAt or 0) > (a.seenAt or a.savedAt or 0) then newer, older = b, a end
     local merged = {}
@@ -292,34 +263,18 @@ local function MergeChar(a, b)
     return merged
 end
 
--- Entries saved while the realm name came back empty ("Name-", build 71037) go back with the rest:
--- into the one other entry with that name, or, if there's none, under the realm. If a name is on
--- several realms, the entry is left as it is.
-local function MergeEmptyRealms(db)
-    local empty = {}
-    for key in pairs(db.chars) do
-        if key:sub(-1) == "-" then empty[#empty + 1] = key end
+-- Saved entries used to be keyed "Name-Realm" (and, after build 71037, "Name-"). Re-keys them all
+-- by full name, merging any that turn out to be the same character. Entries without a surname
+-- (saved before surnames were recorded) keep their first name until that character logs in.
+local function RekeyByName(db)
+    local chars = {}
+    for key, c in pairs(db.chars) do
+        local newKey = c.name and KeyFor(c.name, c.surname) or key:match("^([^%-]+)") or key
+        c.realm = nil
+        chars[newKey] = chars[newKey] and ns.MergeChar(chars[newKey], c) or c
     end
-    for _, key in ipairs(empty) do
-        local prefix = key
-        local match, count = nil, 0
-        for other in pairs(db.chars) do
-            if other ~= key and other:sub(1, #prefix) == prefix then
-                match, count = other, count + 1
-            end
-        end
-        local target = count == 1 and match or nil
-        if count == 0 then
-            local realm = ns.Realm()
-            if realm ~= "" then target = key .. realm end
-        end
-        if target then
-            local c = db.chars[target] and MergeChar(db.chars[target], db.chars[key]) or db.chars[key]
-            c.realm = target:sub(#prefix + 1)
-            db.chars[target] = c
-            db.chars[key] = nil
-        end
-    end
+    db.chars = chars
+    db.realms = nil
 end
 
 local ON_IN_V2 = { "buffBorder", "buffRepeat", "buffEscalate", "buffBigText", "buffFlash", "buffOnKill" }
@@ -337,7 +292,7 @@ local function InitDB()
         db.version = 2
     end
     ns.db = db
-    MergeEmptyRealms(db)
+    RekeyByName(db)
 end
 
 ns.On("ADDON_LOADED", function(name)

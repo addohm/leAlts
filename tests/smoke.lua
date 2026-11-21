@@ -58,7 +58,7 @@ return function(root)
         c:Login()
         check(c:ChatHas("type /lealts"), "first-run hint printed")
         local db = rawget(c.env, "NothingWastedDB")
-        local maxi = db.chars["Maxi-Forever"]
+        local maxi = db.chars["Maxi"]
         check(maxi and maxi.isMax, "Maxi saved as max level")
         check(c:Frame("NothingWastedFrame") == nil, "window not built before it's needed")
         c:Slash("")
@@ -95,7 +95,7 @@ return function(root)
         a.player.xpMax, a.player.xp, a.player.rested, a.player.zone = 0, 0, 0, ""
         a.player.professions, a.player.bagSlots, a.player.perks = {}, {}, {}
         local db = a:Logout()
-        local alpha = db.chars["Alpha-Forever"]
+        local alpha = db.chars["Alpha"]
         eq(alpha.xpMax, 5000, "logout with no XP data keeps the last good max XP")
         eq(alpha.rested, 100, "and the rested XP")
         eq(alpha.zone, "Elwynn Forest", "and the zone")
@@ -118,23 +118,23 @@ return function(root)
         -- /lealts chars says where the loaded data came from.
         b:ClearChat()
         b:Slash("chars")
-        check(b:ChatHas("saved by Alpha%-Forever"), "/lealts chars names the session that saved the data")
+        check(b:ChatHas("saved by Alpha"), "/lealts chars names the session that saved the data")
 
         -- A secret value somewhere in the data is removed before saving, so the save can't fail.
-        rawget(b.env, "NothingWastedDB").chars["Beta-Forever"].legacyProgress = { [1] = { name = mock.Secret("A challenge") } }
+        rawget(b.env, "NothingWastedDB").chars["Beta"].legacyProgress = { [1] = { name = mock.Secret("A challenge") } }
         local saved = b:Logout()
-        check(saved.chars["Beta-Forever"].legacyProgress[1].name == nil, "secret values are removed before saving")
+        check(saved.chars["Beta"].legacyProgress[1].name == nil, "secret values are removed before saving")
         eq(saved.lastSave and saved.lastSave.secretsRemoved, 1, "and counted")
-        eq(saved.lastSave.by, "Beta-Forever", "the save records who wrote it")
+        eq(saved.lastSave.by, "Beta", "the save records who wrote it")
 
         -- A character with no XP data at all still gets a bar.
-        rawget(b.env, "NothingWastedDB").chars["Gamma-Forever"] = { name = "Gamma", realm = "Forever", level = 5 }
+        rawget(b.env, "NothingWastedDB").chars["Gamma"] = { name = "Gamma", realm = "Forever", level = 5 }
         b.ns.Meter.Refresh()
         eq(#b:Rows(b.ns.Meter.Frame()), 3, "a character without XP data still gets a bar")
         b:ClearChat()
         b:Slash("chars")
         check(b:ChatHas("3 saved character"), "/lealts chars lists them")
-        check(b:ChatHas("Gamma%-Forever.-no XP data yet"), "and says why a bar is empty")
+        check(b:ChatHas("Gamma.-no XP data yet"), "and says why a bar is empty")
     end)
 
     test("1c. leveling buff reminders", function()
@@ -540,7 +540,7 @@ return function(root)
         near(B.MissedXP("wellFed"), 70, 0.01, "Well Fed 5% of 1,000")
 
         -- Running totals are saved per character and shown in its tooltip and /lealts buffs.
-        local me = rawget(c.env, "NothingWastedDB").chars["Sleepy-Forever"]
+        local me = rawget(c.env, "NothingWastedDB").chars["Sleepy"]
         near(me.missedXP.wellFed, 100, 0.01, "Well Fed total saved")
         near(me.missedXP.bag, 82, 0.01, "bag total saved")
         c.ns.Tooltip.ShowCharacter(c.env.UIParent, me, true)
@@ -700,62 +700,63 @@ return function(root)
         check(d.ns.Meter.IsShown(), "it's up at login")
     end)
 
-    test("1c3e. the realm name comes back empty (client build 71037)", function()
+    test("1c3e. characters are saved by full name, not realm", function()
         local now = os.time()
         local REALM = "CAMWOW US1 Realm 2 PvP"
-        local db = { version = 2, chars = {
-            ["Coo-" .. REALM] = { name = "Coo", surname = "Tur", realm = REALM, level = 1, xp = 0, xpMax = 400,
-                rested = 0, resting = true, savedAt = now - 30 * HOUR, seenAt = now - 30 * HOUR,
+        local db = { version = 2, realms = { [7] = REALM }, chars = {
+            ["Coo-" .. REALM] = { name = "Coo", surname = "Tur", realm = REALM, class = "MAGE", level = 1, xp = 0,
+                xpMax = 400, rested = 0, resting = true, savedAt = now - 30 * HOUR, seenAt = now - 30 * HOUR,
                 onlyOld = "kept", missedXP = { wellFed = 10 } },
-            ["Coo-"] = { name = "Coo", surname = "Tur", level = 2, xp = 10, xpMax = 900, rested = 0, resting = true,
-                savedAt = now - 120, seenAt = now - 120, missedXP = { wellFed = 5, bag = 3 } },
+            ["Coo-"] = { name = "Coo", surname = "Tur", class = "MAGE", level = 2, xp = 10, xpMax = 900, rested = 0,
+                resting = true, savedAt = now - 120, seenAt = now - 120, missedXP = { wellFed = 5, bag = 3 } },
             ["Who-" .. REALM] = { name = "Who", surname = "Ore", realm = REALM, level = 6, xpMax = 2000, savedAt = now - 30 * HOUR },
             ["Slo-"] = { name = "Slo", surname = "Oot", level = 1, xpMax = 400, savedAt = now - 240 },
+            -- Saved before surnames were recorded: merged when it logs in.
+            ["Kam-" .. REALM] = { name = "Kam", realm = REALM, class = "MAGE", level = 46, xpMax = 90000,
+                savedAt = now - 16 * HOUR, onlyOld = "kam" },
         } }
         local c = mock.NewClient({ root = root, db = db, now = now, player = {
-            name = "Coo", surname = "Tur", realm = "", realmID = 7, level = 2, xp = 10, xpMax = 900, resting = true,
+            name = "Coo", surname = "Tur", realm = "", level = 2, xp = 10, xpMax = 900, resting = true,
         } })
         c:Login()
         local saved = rawget(c.env, "NothingWastedDB")
-        local keys = {}
-        for k in pairs(saved.chars) do keys[#keys + 1] = k end
-        table.sort(keys)
-        eq(table.concat(keys, ","), "Coo-" .. REALM .. ",Slo-" .. REALM .. ",Who-" .. REALM, "one entry per character, under the realm")
-        local coo = saved.chars["Coo-" .. REALM]
+        local function Keys(d)
+            local keys = {}
+            for k in pairs(d.chars) do keys[#keys + 1] = k end
+            table.sort(keys)
+            return table.concat(keys, ",")
+        end
+        eq(Keys(saved), "Coo Tur,Kam,Slo Oot,Who Ore", "one entry per character, by full name")
+        local coo = saved.chars["Coo Tur"]
         eq(coo.level, 2, "the newer entry's values win")
         eq(coo.onlyOld, "kept", "what only the older one had is kept")
         eq(coo.missedXP.wellFed, 15, "XP missed totals add up")
         eq(coo.missedXP.bag, 3, "including ones only one had")
-        eq(coo.realm, REALM, "the realm is filled in")
-        eq(saved.chars["Slo-" .. REALM].realm, REALM, "an entry with no twin goes under the realm")
-        eq(c.ns.PlayerKey(), "Coo-" .. REALM, "the character is saved under the realm")
-        eq(saved.realms[7], REALM, "the realm is remembered by its ID")
+        check(coo.realm == nil and saved.realms == nil, "no realm is kept")
+        eq(c.ns.PlayerKey(), "Coo Tur", "the character is saved by full name")
         c:ClearChat()
         c:Slash("chars")
-        check(c:ChatHas("3 saved character"), "/lealts chars lists three")
+        check(c:ChatHas("4 saved character") and c:ChatHas("  Coo Tur  level 2"), "/lealts chars lists names only")
 
-        -- Later, with the name remembered by ID, it doesn't need the guess.
+        -- A first-name-only entry joins the full name when that character logs in.
         saved = c:Logout()
-        saved.chars["Zed-Other Realm"] = { name = "Zed", realm = "Other Realm", level = 3, xpMax = 1000, savedAt = now }
-        local d = mock.NewClient({ root = root, db = saved, now = now, player = {
-            name = "Who", surname = "Ore", realm = "", realmID = 7, level = 6, xp = 0, xpMax = 2000, resting = true,
+        local k = mock.NewClient({ root = root, db = saved, now = now, player = {
+            name = "Kam", surname = "Pf", realm = "", level = 47, xp = 0, xpMax = 95000, resting = true,
         } })
-        d:Login()
-        eq(d.ns.PlayerKey(), "Who-" .. REALM, "the remembered name is used, even with two realms saved")
+        k:Login()
+        local after = rawget(k.env, "NothingWastedDB")
+        eq(Keys(after), "Coo Tur,Kam Pf,Slo Oot,Who Ore", "Kam joins Kam Pf")
+        eq(after.chars["Kam Pf"].onlyOld, "kam", "keeping what it had")
+        eq(after.chars["Kam Pf"].level, 47, "with the live values")
 
-        -- Two realms and nothing remembered: the realm ID stands in.
-        local e = mock.NewClient({ root = root, db = { version = 2, chars = {
-            ["A-One"] = { name = "A", realm = "One", level = 3, xpMax = 1000, savedAt = now },
-            ["B-Two"] = { name = "B", realm = "Two", level = 3, xpMax = 1000, savedAt = now },
-        } }, now = now, player = { name = "New", realm = "", realmID = 9, level = 1, xp = 0, xpMax = 400, resting = true } })
-        e:Login()
-        eq(e.ns.PlayerKey(), "New-Realm 9", "unknown realm: Realm <id>")
-
-        -- Mail to an alt is matched on the realm too.
-        d.env.SendMail("Coo Tur", "hi", "")
-        d:Fire("MAIL_SEND_SUCCESS")
-        local coo2 = rawget(d.env, "NothingWastedDB").chars["Coo-" .. REALM]
-        eq(coo2.mail and #coo2.mail.incoming, 1, "mail to an alt is recognised with no realm name")
+        -- Mail to an alt is matched by name, with or without the surname or a realm.
+        k.env.SendMail("Coo Tur", "hi", "")
+        k:Fire("MAIL_SEND_SUCCESS")
+        k.env.SendMail("Who-SomeRealm", "hi", "")
+        k:Fire("MAIL_SEND_SUCCESS")
+        local chars = rawget(k.env, "NothingWastedDB").chars
+        eq(chars["Coo Tur"].mail and #chars["Coo Tur"].mail.incoming, 1, "mail to the full name")
+        eq(chars["Who Ore"].mail and #chars["Who Ore"].mail.incoming, 1, "mail to a first name with a realm")
     end)
 
     test("1c4. clicking a reminder icon eats or uses the sleeping bag", function()
@@ -899,8 +900,8 @@ return function(root)
         a:Login()
         a.player.money = 0 -- the game reports no gold at logout
         local saved = a:Logout()
-        eq(saved.chars["Kyol-Forever"].surname, "Brightwater", "the surname is saved")
-        eq(saved.chars["Kyol-Forever"].money, 123456, "gold isn't zeroed at logout")
+        eq(saved.chars["Kyol Brightwater"].surname, "Brightwater", "the surname is saved")
+        eq(saved.chars["Kyol Brightwater"].money, 123456, "gold isn't zeroed at logout")
         local b = mock.NewClient({ root = root, db = saved, player = { name = "Tam", surname = "Ashdown", level = 12, xp = 0, xpMax = 6000, resting = true } })
         b:Login()
         b.ns.Meter.Show()
@@ -908,10 +909,10 @@ return function(root)
         check(texts:find("Kyol Brightwater") and texts:find("Tam Ashdown"), "bars show first and last names: " .. texts)
         b:ClearChat()
         b:Slash("chars")
-        check(b:ChatHas("Kyol Brightwater%-Forever"), "/lealts chars too")
+        check(b:ChatHas("Kyol Brightwater"), "/lealts chars too")
         b.env.SendMail("Kyol Brightwater", "hi", "")
         b:Fire("MAIL_SEND_SUCCESS")
-        local kyol = rawget(b.env, "NothingWastedDB").chars["Kyol-Forever"]
+        local kyol = rawget(b.env, "NothingWastedDB").chars["Kyol Brightwater"]
         eq(kyol.mail and #kyol.mail.incoming, 1, "mail to the full name is recognised")
     end)
 
@@ -937,7 +938,7 @@ return function(root)
 
         -- A login check: logged out 8h in an inn, came back with 5% of a level more.
         local db = c:Logout()
-        local saved = db.chars["Rater-Forever"]
+        local saved = db.chars["Rater"]
         local d = mock.NewClient({ root = root, db = db, now = c.now + 8 * HOUR,
             player = { name = "Rater", level = 27, xp = 19455, xpMax = 38900, rested = saved.rested + 1945, resting = true } })
         d:Login()
@@ -945,7 +946,7 @@ return function(root)
 
         -- A character whose rested XP stays at 0 (the game reports none, e.g. at a level cap) isn't sampled.
         local zeroDb = d:Logout()
-        zeroDb.chars["Rater-Forever"].rested = 0
+        zeroDb.chars["Rater"].rested = 0
         local before = #zeroDb.rateSamples
         local z = mock.NewClient({ root = root, db = zeroDb, now = d.now + 2 * HOUR,
             player = { name = "Rater", level = 27, xp = 19455, xpMax = 38900, rested = 0, resting = true } })
@@ -988,17 +989,17 @@ return function(root)
             if row.item.c.name == "Banky" then bankRow = row end
         end
         bankRow.scripts.OnClick(bankRow, "RightButton")
-        check(c.menu and c.menu.entries[1].title == "Banky-Forever", "the menu is titled with the character")
+        check(c.menu and c.menu.entries[1].title == "Banky", "the menu is titled with the character")
         c:ClearChat()
         c:MenuClick("Stop tracking")
-        check(saved["Banky-Forever"].untracked, "the character is untracked")
-        check(saved["Banky-Forever"].level == 4, "but still saved")
-        check(c:ChatHas("Banky%-Forever is no longer tracked"), "chat says so and how to undo it")
+        check(saved["Banky"].untracked, "the character is untracked")
+        check(saved["Banky"].level == 4, "but still saved")
+        check(c:ChatHas("Banky is no longer tracked"), "chat says so and how to undo it")
         eq(#c:Rows(meter), 2, "its bar goes")
         eq(c.ns.Inventory.TotalCount(2589), 0, "its items aren't counted")
         eq(#c.ns.Alts(), 1, "it isn't an alt any more")
         c:Slash("chars")
-        check(c:ChatHas("Banky%-Forever.-not tracked"), "/lealts chars still lists it, as not tracked")
+        check(c:ChatHas("Banky.-not tracked"), "/lealts chars still lists it, as not tracked")
 
         -- Options, Characters lists every saved character, tracked or not.
         c.ns.Window.Show("chars")
@@ -1010,14 +1011,14 @@ return function(root)
         check(byName.Alpha.check:GetChecked(), "the others are ticked")
         check(not byName.Alpha.forget:IsShown(), "the character being played can't be forgotten")
         byName.Banky.check:Click()
-        check(not saved["Banky-Forever"].untracked, "ticking it tracks it again")
+        check(not saved["Banky"].untracked, "ticking it tracks it again")
         eq(#c:Rows(meter), 3, "and its bar is back")
 
         -- Forget a deleted character, from the page or from a bar.
         byName.Gone.forget:Click()
         local popup = c:AcceptPopup()
-        eq(popup.text, "Forget Gone-Forever?", "Forget asks first")
-        check(saved["Gone-Forever"] == nil, "the character is gone")
+        eq(popup.text, "Forget Gone?", "Forget asks first")
+        check(saved["Gone"] == nil, "the character is gone")
         eq(#c:Rows(TabPanel(c)), 2, "and off the Characters page")
         for _, row in ipairs(c:Rows(meter)) do
             if row.item.c.name == "Banky" then bankRow = row end
@@ -1025,11 +1026,11 @@ return function(root)
         bankRow.scripts.OnClick(bankRow, "RightButton")
         c:MenuClick("Forget")
         c:AcceptPopup()
-        check(saved["Banky-Forever"] == nil, "forgotten from a bar's menu")
+        check(saved["Banky"] == nil, "forgotten from a bar's menu")
         eq(#c:Rows(meter), 1, "one bar left")
 
         -- Playing an untracked character: no leveling buff reminders or logout warning for it.
-        c.ns.Character.SetTracked("Alpha-Forever", false)
+        c.ns.Character.SetTracked("Alpha", false)
         eq(#c:Rows(meter), 0, "the untracked character has no bar while played")
         c.player.resting = false
         c:Fire("PLAYER_UPDATE_RESTING")
@@ -1039,13 +1040,13 @@ return function(root)
         c:Fire("PLAYER_CAMPING")
         check(not c:ChatHas("isn't resting"), "no logout warning")
         saved = c:Logout().chars
-        check(saved["Alpha-Forever"] and saved["Alpha-Forever"].untracked, "it's still saved, untracked, at logout")
+        check(saved["Alpha"] and saved["Alpha"].untracked, "it's still saved, untracked, at logout")
     end)
 
     test("2. rested estimates, alerts and the logout warning", function()
         local db = mock.Copy(db1)
         local now = T0 + 2 * HOUR
-        db.chars["Oldie-Forever"] = {
+        db.chars["Oldie"] = {
             name = "Oldie", realm = "Forever", class = "PRIEST", className = "Priest", level = 30,
             xp = 0, xpMax = 20000, rested = 0, resting = true, savedAt = now - 8 * HOUR,
         }
@@ -1061,12 +1062,12 @@ return function(root)
         check(texts[2] and texts[2]:find("Oldie"), "Oldie second")
 
         local ns = c.ns
-        local oldie = rawget(c.env, "NothingWastedDB").chars["Oldie-Forever"]
+        local oldie = rawget(c.env, "NothingWastedDB").chars["Oldie"]
         local rested, cap, toCap = ns.Rested.Estimate(oldie, c.now)
         near(rested, 1000 + 20000 * 0.05 / 28800 * 6, 1, "Oldie built 5% of a level in 8h at an inn")
         eq(cap, 30000, "Oldie's cap is 150% of a level")
         near(toCap, 835200 - 6, 2, "Oldie caps in 9d 16h")
-        local kyol = rawget(c.env, "NothingWastedDB").chars["Kyol-Forever"]
+        local kyol = rawget(c.env, "NothingWastedDB").chars["Kyol"]
         local _, kcap, ktoCap = ns.Rested.Estimate(kyol, kyol.savedAt)
         eq(kcap, 15000, "Kyol's cap")
         near(ktoCap, 748800, 1, "Kyol caps in 8d 16h")
@@ -1165,8 +1166,8 @@ return function(root)
         eq(#c:Rows(frame), 1, "bars window shows at most the set number of bars")
         rawget(c.env, "NothingWastedDB").settings.meter.maxBars = 10
         db2 = c:Logout()
-        eq(db2.chars["Kyol-Forever"].wellRested, 5, "rank saved at logout")
-        eq(db2.chars["Kyol-Forever"].resting, false, "logged out not resting")
+        eq(db2.chars["Kyol"].wellRested, 5, "rank saved at logout")
+        eq(db2.chars["Kyol"].resting, false, "logged out not resting")
     end)
 
     test("3. reminders at every login, or only once", function()
@@ -1186,7 +1187,7 @@ return function(root)
     test("4. hardcore characters aren't tracked", function()
         local c = mock.NewClient({ root = root, db = db3, player = { name = "Hardy", hardcore = true } })
         c:Login()
-        check(rawget(c.env, "NothingWastedDB").chars["Hardy-Forever"] == nil, "hardcore character not saved")
+        check(rawget(c.env, "NothingWastedDB").chars["Hardy"] == nil, "hardcore character not saved")
     end)
 
     test("5. mail, items, search and recipes", function()
@@ -1204,7 +1205,7 @@ return function(root)
         local db = rawget(c.env, "NothingWastedDB")
         c.env.SendMail("Oldie", "cloth", "")
         c:Fire("MAIL_SEND_SUCCESS")
-        local oldie = db.chars["Oldie-Forever"]
+        local oldie = db.chars["Oldie"]
         eq(oldie.mail and #oldie.mail.incoming, 1, "mail to Oldie recorded at send time")
         eq(oldie.mail.incoming[1].items[2589], 20, "with its items")
 
@@ -1240,7 +1241,7 @@ return function(root)
         c.openProfession = "Tailoring"
         c:Fire("TRADE_SKILL_LIST_UPDATE")
         c:Advance(2)
-        local kyol = db.chars["Kyol-Forever"]
+        local kyol = db.chars["Kyol"]
         check(kyol.recipes and kyol.recipes.Tailoring and kyol.recipes.Tailoring[3915], "known recipe recorded")
         eq(c.ns.Professions.CraftableFromAlts(3915), 15, "crafts from all characters' items")
 
@@ -1305,7 +1306,7 @@ return function(root)
             },
         })
         c:Login()
-        local kyol = rawget(c.env, "NothingWastedDB").chars["Kyol-Forever"]
+        local kyol = rawget(c.env, "NothingWastedDB").chars["Kyol"]
         check(kyol.cooldowns.mooncloth, "Mooncloth cooldown recorded")
         near(kyol.cooldowns.mooncloth.readyAt - c.now, 95 * HOUR - 6, 2, "ready in 95 hours")
         check(kyol.cooldowns.hearthstone, "hearthstone recorded")
@@ -1329,7 +1330,7 @@ return function(root)
             player = { name = "Kyol", level = 20, xpMax = 10000, achievements = { [1001] = { q = 20 }, [1002] = { completed = true, earnedByMe = true } } },
         })
         c:Login()
-        local kyol = rawget(c.env, "NothingWastedDB").chars["Kyol-Forever"]
+        local kyol = rawget(c.env, "NothingWastedDB").chars["Kyol"]
         c.ns.Legacy.SetGoal(1001, true)
         eq(kyol.legacyProgress[1001].q, 20, "goal progress recorded")
         c:Slash("")
@@ -1388,7 +1389,7 @@ return function(root)
             },
         })
         c:Login()
-        local kyol = rawget(c.env, "NothingWastedDB").chars["Kyol-Forever"]
+        local kyol = rawget(c.env, "NothingWastedDB").chars["Kyol"]
         -- Untrained spells come from the trainer, not the spellbook.
         eq(#c.ns.Leveling.Trainable(kyol), 0, "nothing known before a trainer visit")
         c.trainer = {

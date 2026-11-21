@@ -69,7 +69,7 @@ local function CraftItems()
             end
         end
         table.sort(byProfession, function(a, b) return a.name < b.name end)
-        local key = (c.name or "?") .. "-" .. (c.realm or "?")
+        local key = ns.FullName(c)
         if total > 0 then
             items[#items + 1] = ns.UI.CollapsibleHeader(craftsOpen, key, ns.ColoredName(c),
                 format(L["%d recipe(s)"], total), true)

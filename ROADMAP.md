@@ -21,8 +21,6 @@ What's done for leAlts and what's next. Update it in the same commit as the chan
 - **Cozy Sleeping Bag:** which of quests 79007 and 79008 is Alliance or Horde (either counts).
 - **Surnames:** that `UnitName("player")`'s second value is the surname on Forever (Blizzard's
   Camelot `NameUtil.lua` reads it that way), and how the mail Send To box takes a full name.
-  Saved data is still keyed by first name and realm; if two of your characters on one realm can
-  share a first name, that needs the surname in the key.
 - **Buff reminder extras:** how the gold and class-colour screen borders look (a grey copy of the
   low-health texture, tinted), the large text (`GameFontNormalHuge3`) and the taskbar flash
   (`FlashClientIcon`).
@@ -30,10 +28,8 @@ What's done for leAlts and what's next. Update it in the same commit as the chan
   `type1` item or toy), that the click buttons sit right over the icons (placed by `GetCenter`),
   and that food tooltips name Well Fed (English: "you will become well fed"). In other languages
   the tooltip may word it differently; `/lealts buffs` shows the food found.
-- **Realm name gone (build 71037):** that after updating, every character has one bar again (the
-  realm-less duplicates merged at login), `/lealts chars` shows the realm, and mail to alts is
-  recognised. A character made on a second realm while the name is missing is filed under the
-  realm your other characters are on, until the game gives the name again.
+- **Saved by full name:** that after updating, every character has one bar again (the old
+  "Name-Realm" and "Name-" entries merged at login), and mail to alts is recognised.
 - **Moving the reminder icons:** that dragging the sample works, the icons come up where they were
   dropped, and the click-to-use buttons sit over them afterwards.
 - **XP missed:** that the kill XP worked out (XP gained less `QUEST_TURNED_IN`'s reward, the drop
@@ -72,7 +68,6 @@ What's done for leAlts and what's next. Update it in the same commit as the chan
 ## Ideas
 
 - Show rested XP on the character-select screen, if the client ever allows addons there.
-- Per-realm group headers for players with many alts.
 
 ## Done
 

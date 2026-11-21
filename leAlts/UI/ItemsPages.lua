@@ -54,7 +54,7 @@ local function MailItems()
         local list = ns.Mail.Pending(c)
         if #list > 0 then
             local seen = c.mail and c.mail.inboxAt
-            local key = (c.name or "?") .. "-" .. (c.realm or "?")
+            local key = ns.FullName(c)
             local soonest = list[1].expiresAt
             local note = format(L["%d waiting"], #list)
             local color = soonest and ns.Mail.ExpiryColor(soonest - now) or ""

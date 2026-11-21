@@ -37,6 +37,14 @@ function Character.Save(reason)
     local level = UnitLevel("player")
     if not level or level <= 0 then return end -- not ready during loading screens
 
+    -- An entry saved before surnames were recorded is under the first name alone: fold it in.
+    local first = UnitName("player")
+    local old = key ~= first and ns.db.chars[first]
+    if old and not old.surname and old.class == select(2, UnitClass("player")) then
+        ns.db.chars[first] = nil
+        ns.db.chars[key] = ns.db.chars[key] and ns.MergeChar(ns.db.chars[key], old) or old
+    end
+
     local c = ns.db.chars[key]
     if not c then
         c = {}
@@ -52,7 +60,6 @@ function Character.Save(reason)
     if type(surname) == "string" and not (issecretvalue and issecretvalue(surname)) then
         Set(c, "surname", surname)
     end
-    Set(c, "realm", ns.Realm())
     Set(c, "faction", UnitFactionGroup("player"))
     if c.level and level > c.level then ns.Fire("NW_LEVEL_UP", c, level) end
     c.level = level

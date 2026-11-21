@@ -19,17 +19,16 @@ local function MailOf(c)
     return c.mail
 end
 
--- The saved character a mail recipient refers to ("Name", "First Last", with or without "-Realm"),
+-- The saved character a mail recipient refers to ("Name" or "First Last", any "-Realm" ignored),
 -- if it's one of ours.
 -- Untracked characters count too, so their mail is right if they're tracked again.
 local function FindRecipient(recipient)
     if not recipient or recipient == "" then return end
-    local name, realm = recipient:match("^([^%-]+)%-?(.*)$")
+    local name = recipient:match("^([^%-]+)")
     if not name then return end
-    if realm == "" then realm = ns.Realm() end
-    local lname, lrealm = name:lower(), realm:gsub("%s", ""):lower()
+    local lname = name:match("^%s*(.-)%s*$"):lower()
     for key, c in pairs(ns.db.chars) do
-        if c.name and (c.name:lower() == lname or ns.FullName(c):lower() == lname) and (c.realm or ""):gsub("%s", ""):lower() == lrealm then
+        if c.name and (c.name:lower() == lname or ns.FullName(c):lower() == lname) then
             return key, c
         end
     end

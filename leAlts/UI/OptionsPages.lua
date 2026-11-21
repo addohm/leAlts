@@ -166,8 +166,7 @@ local function CharacterItems()
     local items = {}
     for key, c in pairs(ns.db.chars) do items[#items + 1] = { key = key, c = c, isMe = key == me } end
     table.sort(items, function(a, b)
-        if (a.c.name or "") ~= (b.c.name or "") then return (a.c.name or "") < (b.c.name or "") end
-        return (a.c.realm or "") < (b.c.realm or "")
+        return ns.FullName(a.c) < ns.FullName(b.c)
     end)
     return items
 end
@@ -205,10 +204,10 @@ end
 
 local function UpdateCharacterRow(row, item)
     local c = item.c
-    item.name = ns.FullName(c) .. "-" .. (c.realm or "?")
+    item.name = ns.FullName(c)
     local tracked = ns.IsTracked(c)
     row.check:SetChecked(tracked)
-    local name = ns.ColoredName(c) .. " |cff999999" .. (c.realm or "?") .. "|r"
+    local name = ns.ColoredName(c)
     if item.isMe then name = name .. " |cff999999" .. L["(you)"] .. "|r" end
     row.name:SetText(name)
     local seen = item.isMe and L["playing now"]
