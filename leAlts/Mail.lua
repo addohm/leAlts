@@ -26,7 +26,7 @@ local function FindRecipient(recipient)
     if not recipient or recipient == "" then return end
     local name, realm = recipient:match("^([^%-]+)%-?(.*)$")
     if not name then return end
-    if realm == "" then realm = GetRealmName() end
+    if realm == "" then realm = ns.Realm() end
     local lname, lrealm = name:lower(), realm:gsub("%s", ""):lower()
     for key, c in pairs(ns.db.chars) do
         if c.name and (c.name:lower() == lname or ns.FullName(c):lower() == lname) and (c.realm or ""):gsub("%s", ""):lower() == lrealm then

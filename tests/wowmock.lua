@@ -502,6 +502,7 @@ function M.NewClient(opts)
     env.IsResting = function() return player.resting end
     env.IsXPUserDisabled = function() return player.xpDisabled end
     env.GetRealmName = function() return player.realm end
+    env.GetRealmID = function() return player.realmID or 1 end
     env.GetRealZoneText = function() return player.zone end
     env.GetSubZoneText = function() return player.subzone end
     env.GetBindLocation = function() return player.bind end

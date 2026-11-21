@@ -52,7 +52,7 @@ function Character.Save(reason)
     if type(surname) == "string" and not (issecretvalue and issecretvalue(surname)) then
         Set(c, "surname", surname)
     end
-    Set(c, "realm", GetRealmName())
+    Set(c, "realm", ns.Realm())
     Set(c, "faction", UnitFactionGroup("player"))
     if c.level and level > c.level then ns.Fire("NW_LEVEL_UP", c, level) end
     c.level = level

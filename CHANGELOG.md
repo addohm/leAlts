@@ -29,6 +29,13 @@ All notable changes to this project are documented here. The format follows
 
 ### Fixed
 
+- Characters showed twice, and new ones could be missing from the bars window, after the client
+  update of 2026-11-20 (build 71037): the game stopped giving addons the realm name, so every
+  character got a second, realm-less entry. The realm now comes from the realm ID (the name is
+  remembered once seen, or taken from your saved characters if they're all on one realm), and the
+  duplicates are merged back at login, keeping the newer data and adding up the XP missed totals.
+  Mail to your alts is matched again too (2026-11-21).
+
 - XP missed without Well Fed counted the rested bonus and exploration XP as kill XP, so it came
   out about twice too high while rested, and it missed kills after Well Fed ran out mid-fight. It
   was also lost on a reload; the totals are saved now (2026-11-19).

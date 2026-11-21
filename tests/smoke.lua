@@ -700,6 +700,64 @@ return function(root)
         check(d.ns.Meter.IsShown(), "it's up at login")
     end)
 
+    test("1c3e. the realm name comes back empty (client build 71037)", function()
+        local now = os.time()
+        local REALM = "CAMWOW US1 Realm 2 PvP"
+        local db = { version = 2, chars = {
+            ["Coo-" .. REALM] = { name = "Coo", surname = "Tur", realm = REALM, level = 1, xp = 0, xpMax = 400,
+                rested = 0, resting = true, savedAt = now - 30 * HOUR, seenAt = now - 30 * HOUR,
+                onlyOld = "kept", missedXP = { wellFed = 10 } },
+            ["Coo-"] = { name = "Coo", surname = "Tur", level = 2, xp = 10, xpMax = 900, rested = 0, resting = true,
+                savedAt = now - 120, seenAt = now - 120, missedXP = { wellFed = 5, bag = 3 } },
+            ["Who-" .. REALM] = { name = "Who", surname = "Ore", realm = REALM, level = 6, xpMax = 2000, savedAt = now - 30 * HOUR },
+            ["Slo-"] = { name = "Slo", surname = "Oot", level = 1, xpMax = 400, savedAt = now - 240 },
+        } }
+        local c = mock.NewClient({ root = root, db = db, now = now, player = {
+            name = "Coo", surname = "Tur", realm = "", realmID = 7, level = 2, xp = 10, xpMax = 900, resting = true,
+        } })
+        c:Login()
+        local saved = rawget(c.env, "NothingWastedDB")
+        local keys = {}
+        for k in pairs(saved.chars) do keys[#keys + 1] = k end
+        table.sort(keys)
+        eq(table.concat(keys, ","), "Coo-" .. REALM .. ",Slo-" .. REALM .. ",Who-" .. REALM, "one entry per character, under the realm")
+        local coo = saved.chars["Coo-" .. REALM]
+        eq(coo.level, 2, "the newer entry's values win")
+        eq(coo.onlyOld, "kept", "what only the older one had is kept")
+        eq(coo.missedXP.wellFed, 15, "XP missed totals add up")
+        eq(coo.missedXP.bag, 3, "including ones only one had")
+        eq(coo.realm, REALM, "the realm is filled in")
+        eq(saved.chars["Slo-" .. REALM].realm, REALM, "an entry with no twin goes under the realm")
+        eq(c.ns.PlayerKey(), "Coo-" .. REALM, "the character is saved under the realm")
+        eq(saved.realms[7], REALM, "the realm is remembered by its ID")
+        c:ClearChat()
+        c:Slash("chars")
+        check(c:ChatHas("3 saved character"), "/lealts chars lists three")
+
+        -- Later, with the name remembered by ID, it doesn't need the guess.
+        saved = c:Logout()
+        saved.chars["Zed-Other Realm"] = { name = "Zed", realm = "Other Realm", level = 3, xpMax = 1000, savedAt = now }
+        local d = mock.NewClient({ root = root, db = saved, now = now, player = {
+            name = "Who", surname = "Ore", realm = "", realmID = 7, level = 6, xp = 0, xpMax = 2000, resting = true,
+        } })
+        d:Login()
+        eq(d.ns.PlayerKey(), "Who-" .. REALM, "the remembered name is used, even with two realms saved")
+
+        -- Two realms and nothing remembered: the realm ID stands in.
+        local e = mock.NewClient({ root = root, db = { version = 2, chars = {
+            ["A-One"] = { name = "A", realm = "One", level = 3, xpMax = 1000, savedAt = now },
+            ["B-Two"] = { name = "B", realm = "Two", level = 3, xpMax = 1000, savedAt = now },
+        } }, now = now, player = { name = "New", realm = "", realmID = 9, level = 1, xp = 0, xpMax = 400, resting = true } })
+        e:Login()
+        eq(e.ns.PlayerKey(), "New-Realm 9", "unknown realm: Realm <id>")
+
+        -- Mail to an alt is matched on the realm too.
+        d.env.SendMail("Coo Tur", "hi", "")
+        d:Fire("MAIL_SEND_SUCCESS")
+        local coo2 = rawget(d.env, "NothingWastedDB").chars["Coo-" .. REALM]
+        eq(coo2.mail and #coo2.mail.incoming, 1, "mail to an alt is recognised with no realm name")
+    end)
+
     test("1c4. clicking a reminder icon eats or uses the sleeping bag", function()
         local c = mock.NewClient({ root = root, player = {
             name = "Clicky", level = 20, xp = 0, xpMax = 10000, resting = true, items = { [211527] = 1 }, auras = { [1229451] = 99999 },

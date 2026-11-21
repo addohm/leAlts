@@ -151,8 +151,47 @@ function ns.Now()
     return time()
 end
 
+-- The realm's name. Since client build 71037 (2026-11-20), GetRealmName() returns "" on Forever
+-- (Blizzard's own UI moved to realm IDs then), but GetRealmID() still works. So the name is
+-- remembered by ID whenever the game gives it. Data saved before that has no IDs: if every saved
+-- character is on one realm, it's that one. Failing that, "Realm <id>".
+local realmCache
+function ns.Realm()
+    if realmCache then return realmCache end
+    local name = GetRealmName()
+    local id = GetRealmID and GetRealmID()
+    if issecretvalue and (issecretvalue(name) or issecretvalue(id)) then name, id = nil, nil end
+    if not ns.db then return type(name) == "string" and name or "" end
+    ns.db.realms = ns.db.realms or {}
+    if type(name) == "string" and name ~= "" then
+        if id then ns.db.realms[id] = name end
+        realmCache = name
+        return name
+    end
+    if id and ns.db.realms[id] then
+        realmCache = ns.db.realms[id]
+        return realmCache
+    end
+    local only
+    for _, c in pairs(ns.db.chars) do
+        if c.realm and c.realm ~= "" then
+            if only and only ~= c.realm then
+                only = nil
+                break
+            end
+            only = c.realm
+        end
+    end
+    if only then
+        if id then ns.db.realms[id] = only end
+        realmCache = only
+        return only
+    end
+    return id and format(L["Realm %d"], id) or ""
+end
+
 function ns.PlayerKey()
-    return UnitName("player") .. "-" .. GetRealmName()
+    return UnitName("player") .. "-" .. ns.Realm()
 end
 
 function ns.Me()
@@ -236,6 +275,53 @@ end
 
 -- Startup
 
+-- Folds two saved entries for one character together: the newer one's values win, anything only
+-- the older one has is kept, and the XP missed totals add up.
+local function MergeChar(a, b)
+    local newer, older = a, b
+    if (b.seenAt or b.savedAt or 0) > (a.seenAt or a.savedAt or 0) then newer, older = b, a end
+    local merged = {}
+    for k, v in pairs(older) do merged[k] = v end
+    for k, v in pairs(newer) do merged[k] = v end
+    if a.missedXP and b.missedXP then
+        merged.missedXP = {}
+        for _, m in ipairs({ a.missedXP, b.missedXP }) do
+            for kind, xp in pairs(m) do merged.missedXP[kind] = (merged.missedXP[kind] or 0) + xp end
+        end
+    end
+    return merged
+end
+
+-- Entries saved while the realm name came back empty ("Name-", build 71037) go back with the rest:
+-- into the one other entry with that name, or, if there's none, under the realm. If a name is on
+-- several realms, the entry is left as it is.
+local function MergeEmptyRealms(db)
+    local empty = {}
+    for key in pairs(db.chars) do
+        if key:sub(-1) == "-" then empty[#empty + 1] = key end
+    end
+    for _, key in ipairs(empty) do
+        local prefix = key
+        local match, count = nil, 0
+        for other in pairs(db.chars) do
+            if other ~= key and other:sub(1, #prefix) == prefix then
+                match, count = other, count + 1
+            end
+        end
+        local target = count == 1 and match or nil
+        if count == 0 then
+            local realm = ns.Realm()
+            if realm ~= "" then target = key .. realm end
+        end
+        if target then
+            local c = db.chars[target] and MergeChar(db.chars[target], db.chars[key]) or db.chars[key]
+            c.realm = target:sub(#prefix + 1)
+            db.chars[target] = c
+            db.chars[key] = nil
+        end
+    end
+end
+
 local ON_IN_V2 = { "buffBorder", "buffRepeat", "buffEscalate", "buffBigText", "buffFlash", "buffOnKill" }
 
 local function InitDB()
@@ -251,6 +337,7 @@ local function InitDB()
         db.version = 2
     end
     ns.db = db
+    MergeEmptyRealms(db)
 end
 
 ns.On("ADDON_LOADED", function(name)

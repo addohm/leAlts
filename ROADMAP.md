@@ -30,6 +30,10 @@ What's done for leAlts and what's next. Update it in the same commit as the chan
   `type1` item or toy), that the click buttons sit right over the icons (placed by `GetCenter`),
   and that food tooltips name Well Fed (English: "you will become well fed"). In other languages
   the tooltip may word it differently; `/lealts buffs` shows the food found.
+- **Realm name gone (build 71037):** that after updating, every character has one bar again (the
+  realm-less duplicates merged at login), `/lealts chars` shows the realm, and mail to alts is
+  recognised. A character made on a second realm while the name is missing is filed under the
+  realm your other characters are on, until the game gives the name again.
 - **Moving the reminder icons:** that dragging the sample works, the icons come up where they were
   dropped, and the click-to-use buttons sit over them afterwards.
 - **XP missed:** that the kill XP worked out (XP gained less `QUEST_TURNED_IN`'s reward, the drop
